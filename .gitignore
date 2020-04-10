@@ -1,3 +1,17 @@
+# ignore *.txt output files
+*.txt
+
+# ignore .ipynb_checkpoints directory
+.ipynb_checkpoints/
+
+# local data directory
+data/
+
+# VS Code 
+.vscode/
+
+
+# ---------------------------------------
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
