@@ -1,0 +1,23 @@
+# ignore output files
+*.txt
+
+# ignore .ipynb_checkpoints directory
+.ipynb_checkpoints/
+
+instance/
+data/
+
+venv/
+
+*.pyc
+__pycache__/
+
+.pytest_cache/
+.coverage
+htmlcov/
+
+dist/
+build/
+*.egg-info/
+
+.vscode/

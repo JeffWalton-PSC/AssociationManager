@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="content-section-roster">
+
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Retrieve Student Information By Association, Year and Term</legend>
+<!--Associaiton Field-->
+            <div class="form-group">
+                {{ form.association.label(class="form-control-label")}}
+                {{form.csrf_token }}
+                {{ form.options }}
+                {% if form.association.errors %}
+                    {{ form.association(class="form-control form-control-sm is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.association.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.association(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+
+
+<!--YearTerm Field-->
+
+            <div class="form-group">
+                {{ form.yearterm.label(class="form-control-label")}}
+                {{form.csrf_token }}
+                {{ form.options }}
+                {% if form.yearterm.errors %}
+                    {{ form.yearterm(class="form-control form-control-sm is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.yearterm.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.yearterm(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+
+        
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-info") }}
+        </div>
+      </fieldset>  
+    </form>
+</div>
+{% endblock content %}
