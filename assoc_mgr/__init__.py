@@ -18,7 +18,7 @@ from flask_ldap3_login.forms import LDAPLoginForm
 # login_manager.login_message_category = 'info'
 
 from sqlalchemy import create_engine
-engine = create_engine('sqlite:///assoc_mgr/Campus6_mock.db?check_same_thread=False')
+engine = create_engine('sqlite:///data/Campus6_mock.db?check_same_thread=False')
 connection = engine.connect()
 
 
@@ -69,9 +69,9 @@ def create_app(test_config=None):
     from . import auth
     app.register_blueprint(auth.bp)
 
-    # from . import blog
-    # app.register_blueprint(blog.bp)
-    # app.add_url_rule('/', endpoint='index')
+    from . import roster
+    app.register_blueprint(roster.bp)
+    app.add_url_rule('/', endpoint='index')
 
 
     return app
