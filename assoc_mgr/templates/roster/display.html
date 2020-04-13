@@ -32,7 +32,7 @@
                             <td>{{ item[3] }}</td>
                             <td>{{ item[4] }}</td>
                             <td>{{ item[5] }}</td>
-                            <td><a id = "delete" data-target="#myModal.{{loop.index}}" href=" {{ url_for('roster.rosterdisplay', pscid=item[0], lname=item[1], fname=item[2], association=item[3], year=item[4], term=item[5])  }}"  
+                            <td><a id = "delete" data-target="#myModal.{{loop.index}}" href=" {{ url_for('roster.display', pscid=item[0], lname=item[1], fname=item[2], association=item[3], year=item[4], term=item[5])  }}"  
                                 data-toggle="modal" ><i class="fas fa-trash-alt" ></i> </a>                       
                                 
                        
@@ -50,7 +50,7 @@
                                             </div>
                                             <div class="modal-footer text-center">
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">No, I've changed my mind.</button>
-                                                <a  data-target="#delete" href=" {{ url_for('roster.rosterdisplay', pscid=item[0], lname=item[1], fname=item[2], association=item[3], year=item[4], term=item[5])  }}">
+                                                <a  data-target="#delete" href=" {{ url_for('roster.display', pscid=item[0], lname=item[1], fname=item[2], association=item[3], year=item[4], term=item[5])  }}">
                                                     <button type="button" class="btn btn-danger" >Yes, delete this student.</button>
                                                 </a>
                                             </div>
@@ -63,7 +63,7 @@
                    {% endfor %}                  
                 </table>
             </div>  
-            <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('export.export', yearterm=yearterm, association=association ) }}">
+            <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('roster.export', yearterm=yearterm, association=association ) }}">
                 <button class = "btn btn-outline-info" >Save as .csv</a></button> 
             </a>
             <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('roster.roster')}}">

@@ -80,7 +80,7 @@ def roster():
 #Handler for Delete Request
 @bp.route("/roster/display", methods = ['GET', 'POST'])
 #@login_required 
-def rosterdisplay():
+def display():
 
     pscid = request.args.get('pscid')
     lname = request.args.get('lname')
@@ -103,12 +103,12 @@ def rosterdisplay():
 
         flash(f"{lname}, {fname} has been deleted from {association} for {term} {year}.", "danger")
 
-    return redirect(url_for('roster.index'))
+    return redirect(url_for('roster.roster'))
 
 
 @bp.route("/roster/export", methods = ['GET', 'POST'])
 #@login_required
-def rosterexport():
+def export():
     
     yearterm = request.args.get('yearterm')
     association = request.args.get('association')
