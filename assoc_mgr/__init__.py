@@ -1,12 +1,13 @@
 import os
 
 from flask import Flask, render_template_string
-from flask_sqlalchemy import SQLAlchemy #library for database
-from flask_bcrypt import Bcrypt #Library for encryption
+#from flask_sqlalchemy import SQLAlchemy #library for database
+#from flask_bcrypt import Bcrypt #Library for encryption
 from flask_login import LoginManager
 #from assoc_mgr.config import Config
-from flask_ldap3_login import LDAP3LoginManager
-from flask_ldap3_login.forms import LDAPLoginForm
+#from flask_ldap3_login import LDAP3LoginManager
+#from flask_ldap3_login.forms import LDAPLoginForm
+from flask_bootstrap import Bootstrap
 
 
 
@@ -24,6 +25,7 @@ connection = engine.connect()
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
+    bootstrap = Bootstrap(app)
     app.config.from_mapping(
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'data.sqlite'),
@@ -71,7 +73,7 @@ def create_app(test_config=None):
 
     from . import roster
     app.register_blueprint(roster.bp)
-    app.add_url_rule('/', endpoint='index')
+    #app.add_url_rule('/', endpoint='index')
 
 
     return app

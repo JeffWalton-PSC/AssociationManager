@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %} List Students By Association, Year and Term {% endblock %}
+{% block header %} List Students By Association, Year and Term {% endblock %}
 
-{% block content %}
+{% block page_content %}
 <div class="content-section-roster">
 {{ wtf.quick_form(form) }}
 </div>
-{% endblock content %}
+{% endblock page_content %}

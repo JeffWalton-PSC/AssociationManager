@@ -1,6 +1,6 @@
-<!doctype html>
-<title>{% block title %}{% endblock %} - Association Manager</title>
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% extends "bootstrap/base.html" %}
+{% block title %}Association Manager{% endblock %}
+{% block navbar %}
 <nav>
   <h1> Paul Smith's Association Manager </h1>
   <ul>
@@ -12,6 +12,9 @@
     {% endif %}
   </ul>
 </nav>
+{% endblock %}
+
+{% block content %}
 <section class="content">
   <header>
     {% block header %}{% endblock %}
@@ -19,5 +22,6 @@
   {% for message in get_flashed_messages() %}
     <div class="flash">{{ message }}</div>
   {% endfor %}
-  {% block content %}{% endblock %}
+  {% block page_content %}{% endblock %}
 </section>
+{% endblock %}
