@@ -75,5 +75,13 @@ def create_app(test_config=None):
     app.register_blueprint(roster.bp)
     #app.add_url_rule('/', endpoint='index')
 
+    from flask import redirect, url_for
+    @app.route('/')
+    def index():
+        return redirect(url_for('auth.login'))
+
 
     return app
+
+
+
