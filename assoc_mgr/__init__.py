@@ -50,23 +50,24 @@ def create_app(test_config=None):
     # ldap_manager.init_app(app)
 
     # from assoc_mgr.add.routes import add
-    # from assoc_mgr.export.routes import exportRoute
     # from assoc_mgr.main.routes import homepage
     # from assoc_mgr.misc.routes import misc
-    # from assoc_mgr.roster.routes import rosterpage
-    # from assoc_mgr.errors.handlers import errors
-    # from assoc_mgr.login.routes import Login
 
     # app.register_blueprint(add)
-    # app.register_blueprint(exportRoute)
     # app.register_blueprint(homepage)
     # app.register_blueprint(misc)
-    # app.register_blueprint(rosterpage)
-    # app.register_blueprint(errors)
-    # app.register_blueprint(Login)
+
 
     from . import db
     db.init_app(app)
+
+    from flask import redirect, url_for, render_template
+    @app.route('/')
+    def index():
+        return redirect(url_for('auth.login'))
+
+    from . import errors
+    app.register_blueprint(errors.bp)
 
     from . import auth
     app.register_blueprint(auth.bp)
@@ -74,11 +75,6 @@ def create_app(test_config=None):
     from . import roster
     app.register_blueprint(roster.bp)
     #app.add_url_rule('/', endpoint='index')
-
-    from flask import redirect, url_for
-    @app.route('/')
-    def index():
-        return redirect(url_for('auth.login'))
 
 
     return app
