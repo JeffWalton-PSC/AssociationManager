@@ -1,6 +1,6 @@
-html { font-family: sans-serif; background: #eee; padding: 1rem; }
+html { font-family: 'Open Sans',Helvetica,Arial,Lucida,sans-serif; font-size: 12px; background: #eee; padding: 1rem; }
 body { max-width: 960px; margin: 0 auto; background: white; }
-h1 { font-family: serif; color: #377ba8; margin: 1rem 0; }
+h1 { color: #377ba8; margin: 1rem 0; }
 a:link { 
 	color: #0000EE;
 }
@@ -21,10 +21,10 @@ nav {
     align-items: center; 
     padding: 0 0.5rem; 
 }
-nav h1 { flex: auto; margin: 0; font-family: 'Open Sans',Helvetica,Arial,Lucida,sans-serif; color: #fff;}
-nav h1 a { text-decoration: none; padding: 0.25rem 0.5rem; font-family: 'Open Sans',Helvetica,Arial,Lucida,sans-serif; color: #fff;}
+nav h1 { flex: auto; margin: 0; color: #8F9A68;}
+nav h1 a { text-decoration: none; padding: 0.25rem 0.5rem; color: #fff; }
 nav ul  { display: flex; list-style: none; margin: 0; padding: 0; }
-nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; color: #6BA539 }
+nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; color: #6BA539; }
 .content { padding: 0 1rem 1rem; }
 .content > header { border-bottom: 1px solid lightgray; display: flex; align-items: flex-end; }
 .content > header h1 { flex: auto; margin: 1rem 0 0.25rem 0; }
@@ -39,6 +39,6 @@ nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; c
 .content label { font-weight: bold; margin-bottom: 0.5em; }
 .content input, .content textarea { margin-bottom: 1em; }
 .content textarea { min-height: 12em; resize: vertical; }
-.btn {background-color: rgb(50, 109, 52); font-size: 12px;}
+.btn {background-color: rgb(50, 109, 52); color: #fff; font-size: 12px;}
 input.danger { color: #cc2f2e; }
 input[type=submit] { align-self: start; min-width: 10em; }
