@@ -23,6 +23,9 @@ from flask_login import current_user
 #from flask_ldap3_login import AuthenticationResponseStatus
 import logging
 
+from assoc_mgr.queries import associations, yearterms, association_export
+
+
 
 class LoginForm(FlaskForm):
     username = StringField('Email', validators=[DataRequired()])
@@ -77,6 +80,12 @@ class LoginForm(FlaskForm):
     #         return valid
 
     #     return self.validate_ldap()
+
+from assoc_mgr import connection as assoc_mgr_conn
+connection = assoc_mgr_conn
+
+df_yearterm = yearterms(connection)
+df_association = associations(connection)
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
@@ -137,6 +146,8 @@ def login():
         if error is None:
             session.clear()
             session['user_id'] = user['id']
+            session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
+            session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
             return redirect(url_for('roster.roster'))
 
         flash(error)

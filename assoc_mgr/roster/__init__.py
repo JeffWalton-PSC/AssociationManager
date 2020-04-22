@@ -20,7 +20,7 @@ class Export(FlaskForm):
     submit = SubmitField("DOWNLOAD")
 
 
-from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response
+from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response, session
 from assoc_mgr.queries import associations, yearterms, association_export
 from datetime import datetime
 
@@ -39,8 +39,44 @@ connection = assoc_mgr_conn
 
 today_str = datetime.now().strftime("%Y%m%d")
 
-df_yearterm = yearterms(connection)
-df_association = associations(connection)
+#df_yearterm = yearterms(connection)
+#df_association = associations(connection)
+
+@bp.route("/roster/index", methods = ['GET', 'POST'])
+#@login_required #Forces user to login to navigate to roster page.
+def index():
+
+    form = Roster()
+    form.yearterm.choices = session['yearterm_list']
+    form.association.choices = session['association_list']
+
+    if form.validate_on_submit():
+        yearterm = form.yearterm.data
+        session['yearterm'] = yearterm
+        year = yearterm.split('.')[0]
+        term = yearterm.split('.')[1]
+        association = form.association.data
+        session['association'] = association
+
+        df_export = association_export(year, term, association, connection)
+        df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+
+        if not(df_export.empty):
+            result = df_export.to_dict('split')['data']
+            return render_template('roster/index.html', 
+                association = f"{association}",
+                yearterm = f"{yearterm}",
+                title = f"{association} - {term} {year}", 
+                result = result,
+                resultlength = f"{str(len(result))} result(s) found."
+                )
+
+        else:
+            flash("No results were returned. Please try again.")
+            return render_template('roster/index.html', title = 'Roster', form = form)
+    else:
+        return render_template('roster/index.html', title = 'Roster', form = form)
+
 
 
 @bp.route("/roster", methods = ['GET', 'POST'])
@@ -48,13 +84,13 @@ df_association = associations(connection)
 def roster():
 
     form = Roster()
-    form.yearterm.choices = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
-    form.association.choices = [tuple(a) for a in df_association.to_numpy()]
+    form.yearterm.choices = session['yearterm_list']
+    form.association.choices = session['association_list']
 
     if form.validate_on_submit():
         yearterm = form.yearterm.data
-        year = df_yearterm.loc[(df_yearterm['YEARTERM'] == yearterm),'ACADEMIC_YEAR'].iloc[0]
-        term = df_yearterm.loc[(df_yearterm['YEARTERM'] == yearterm),'ACADEMIC_TERM'].iloc[0]
+        year = yearterm.split('.')[0]
+        term = yearterm.split('.')[1]
         association = form.association.data
 
         df_export = association_export(year, term, association, connection)
@@ -71,10 +107,10 @@ def roster():
                 )
 
         else:
-            flash("No results were returned. Please Try again.")
-            return render_template('roster/roster.html', title = 'Retrieve Roster', form = form)
+            flash("No results were returned. Please try again.")
+            return render_template('roster/roster.html', title = 'Roster', form = form)
     else:
-        return render_template('roster/roster.html', title = 'Retrieve Roster', form = form)
+        return render_template('roster/roster.html', title = 'Roster', form = form)
 
 
 #Handler for Delete Request
@@ -115,13 +151,13 @@ def export():
 
     form = Export(yearterm=yearterm, association=association )
 
-    form.yearterm.choices = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
-    form.association.choices = [tuple(a) for a in df_association.to_numpy()]
+    form.yearterm.choices = session['yearterm_list']
+    form.association.choices = session['association_list']
 
     if form.validate_on_submit():
         yearterm = form.yearterm.data
-        year = df_yearterm.loc[(df_yearterm['YEARTERM'] == yearterm),'ACADEMIC_YEAR'].iloc[0]
-        term = df_yearterm.loc[(df_yearterm['YEARTERM'] == yearterm),'ACADEMIC_TERM'].iloc[0]
+        year = yearterm.split('.')[0]
+        term = yearterm.split('.')[1]
         association = form.association.data
 
         df_export = association_export(year, term, association, connection)
