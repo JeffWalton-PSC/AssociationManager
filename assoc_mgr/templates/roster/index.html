@@ -1,7 +1,5 @@
 {% extends "base.html" %}
 
-{% import "bootstrap/wtf.html" as wtf %}
-
 {% block header %}<h2> List Students By Association, Year and Term </h2>{% endblock %}
 
 {% block page_content %}
@@ -17,7 +15,7 @@
                     {{ form.yearterm(class="form-control form-control-sm") }}
                     <!-- Association -->
                     {{ form.association.label(class="form-control-label")}}
-                    {{ form.last_name(class="form-control form-control-sm") }}
+                    {{ form.association(class="form-control form-control-sm") }}
                 </div>
                 <!-- Submit Form One For Roster Display -->
                 <div class="form-group">
@@ -26,26 +24,8 @@
             </fieldset>
         </form>  
     
- <!--       <form method="POST" action="">
-            {{ form2.hidden_tag() }}
-            {{ form2.csrf_token }}
-            {{ form2.options }}
-            <fieldset class="form-group">
-                <div class="form-group">
-                    {{ form2.association.label(class="form-control-label")}}
-                    {{ form2.association(class="form-control form-control-sm") }}
-                    {{ form2.term.label(class="form-control-label")}}
-                    {{ form2.term(class="form-control form-control-sm") }}
-                    {{ form2.year.label(class="form-control-label")}}
-                    {{ form2.year(class="form-control form-control-sm") }}
-                </div>
-            
-                <div class="form-group">
-                    {{ form2.submitTwo(class="btn btn-outline-info") }}
-                </div>
-            </fieldset>  
-        </form>
-    -->
+
+
     </div>
 
     <article class="media content-section-display">
@@ -108,6 +88,9 @@
                     {% endfor %}                  
                     </table>
                 </div>  
+                <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('roster.add', yearterm=yearterm, association=association ) }}">
+                    <button class = "btn btn-outline-info" >Add Students</a></button> 
+                </a>
                 <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('roster.export', yearterm=yearterm, association=association ) }}">
                     <button class = "btn btn-outline-info" >Save as .csv</a></button> 
                 </a>

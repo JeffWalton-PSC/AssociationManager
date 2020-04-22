@@ -63,7 +63,8 @@ def index():
 
         if not(df_export.empty):
             result = df_export.to_dict('split')['data']
-            return render_template('roster/index.html', 
+            return render_template('roster/index.html',
+                form = form,
                 association = f"{association}",
                 yearterm = f"{yearterm}",
                 title = f"{association} - {term} {year}", 
@@ -174,4 +175,132 @@ def export():
  
     return render_template('roster/export.html', title = 'Export Roster', form = form, yearterm=yearterm, association=association)
 
-    
+
+from flask_wtf import FlaskForm
+from wtforms.validators import DataRequired
+from wtforms import SubmitField, SelectField, SelectMultipleField
+
+class AddStudentForm(FlaskForm):
+    yearterm = SelectField ('Year.Term', 
+                        choices=[], validators=[DataRequired()])
+    association = SelectField ('Association', choices=[], 
+                                default = None, validators=[DataRequired()])
+    student = SelectMultipleField('Student Names', choices = [], 
+                                default = (None, 'Please Select Student(s)'), validators=[DataRequired()])
+    submit = SubmitField('Add Student(s)') 
+
+
+from flask import render_template, url_for, flash, redirect, Blueprint
+from assoc_mgr.add.forms import AddStudentForm
+from assoc_mgr.queries import students, associations, yearterms, association_members
+from flask_login import login_user, current_user, logout_user, login_required
+from datetime import datetime
+import pandas as pd
+
+
+
+today = datetime.now()
+now = str(today.year)
+one_year_ago = str(today.year - 1)
+two_years_ago = str(today.year - 2)
+
+
+@bp.route("/roster/add", methods =['GET', 'POST'])
+#@login_required #Forces user to login to navigate to update page.
+def add_students():
+
+    form = AddStudentForm()
+
+    df_student = students(now, one_year_ago, connection)
+    form.yearterm.choices = session['yearterm_list']
+    form.association.choices = session['association_list']
+    form.student.choices = [tuple(s) for s in df_student[['PEOPLE_CODE_ID', 'STUDENT']].to_numpy()]
+
+
+    if form.validate_on_submit():
+
+        yearterm = form.yearterm.data
+        session['yearterm'] = yearterm
+        year = yearterm.split('.')[0]
+        term = yearterm.split('.')[1]
+        association = form.association.data
+        session['association'] = association
+        
+        add_list = form.student.data
+
+        assoc_members = association_members(year, term, association, connection)
+
+        if len(add_list) > 0:
+
+            insert_sql = """
+				INSERT INTO ASSOCIATION
+					(
+					PEOPLE_ORG_CODE, 
+					PEOPLE_ORG_ID, 
+					PEOPLE_ORG_CODE_ID, 
+					ASSOCIATION, 
+					ACADEMIC_YEAR, 
+					ACADEMIC_TERM, 
+					ACADEMIC_SESSION, 
+					OFFICE_HELD,
+					CREATE_DATE, 
+					CREATE_TIME, 
+					CREATE_OPID, 
+					CREATE_TERMINAL, 
+					REVISION_DATE, 
+					REVISION_TIME, 
+					REVISION_OPID, 
+					REVISION_TERMINAL, 
+					ABT_JOIN
+					)
+				VALUES """
+
+            first = True
+            exists_list = []
+            for student in add_list:
+                # test if student already exists in ASSOCIATION table. 
+                if student in assoc_members:
+                    exists_list.insert(student)
+                    continue
+                today = f"{datetime.now():%Y-%m-%d %H:%M:%S}"
+                if first:
+                    first = False
+                else:
+                    insert_sql += ','
+
+                insert_val = f"""
+				(
+					'{student[:1]}', 
+					'{student[1:]}', 
+					'{student}', 
+					'{association}', 
+					'{year}', 
+					'{term}', 
+					'', 
+					'',
+					'{today}', 
+					'{today}', 
+					'ASSOCMGR', 
+					'0001', 
+					'{today}', 
+					'{today}', 
+					'ASSOCMGR', 
+					'0001', 
+					'*'
+				) """
+                insert_sql += insert_val
+
+            insert_sql += ';'
+
+            connection.execute(insert_sql)
+
+            flash(f'{len(add_list)} students have been added to {association} for {yearterm}', 'info')
+
+            return redirect(url_for('roster.index'))
+
+        else:
+            flash('No students selected.','danger')
+            return redirect(url_for('roster.index'))
+
+    else:
+        return render_template('add.html', title = 'Add', form = form)
