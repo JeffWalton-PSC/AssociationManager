@@ -191,7 +191,7 @@ class AddStudentForm(FlaskForm):
 
 
 from flask import render_template, url_for, flash, redirect, Blueprint
-from assoc_mgr.add.forms import AddStudentForm
+#from assoc_mgr.add.forms import AddStudentForm
 from assoc_mgr.queries import students, associations, yearterms, association_members
 from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
@@ -207,7 +207,7 @@ two_years_ago = str(today.year - 2)
 
 @bp.route("/roster/add", methods =['GET', 'POST'])
 #@login_required #Forces user to login to navigate to update page.
-def add_students():
+def add():
 
     form = AddStudentForm()
 
@@ -303,4 +303,4 @@ def add_students():
             return redirect(url_for('roster.index'))
 
     else:
-        return render_template('add.html', title = 'Add', form = form)
+        return render_template('/roster/add.html', title = 'Add', form = form)

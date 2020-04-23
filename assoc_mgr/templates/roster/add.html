@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block header %}<h2> Add Students To Association </h2>{% endblock %}
+
+{% block page_content %}
+
+<div class="content-section-update">
+    <form method="POST" action="">
+        {{ form.hidden_tag() }}
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4"> Add a Student - <i class="fas fa-user-plus"></i></legend>
+
+<!--YearTerm-->
+            <legend class="border-bottom mb-1">Semester</legend>
+            <div class="form-group">
+                {{ form.yearterm.label(class="form-control-label") }}
+                {% if form.yearterm.errors %}
+                    {{ form.yearterm(class="form-control form-control-sm is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.yearterm.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.yearterm(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+
+
+<!--Association-->
+
+        <legend class="border-bottom mb-1">Association</legend>
+         <div class="form-group">
+                {{ form.association.label(class="form-control-label") }}
+                {% if form.association.errors %}
+                    {{ form.association(class="form-control form-control-sm is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.association.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.association(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+
+
+<!--Student Form-->
+            <legend class="border-bottom mb-1">Students</legend>
+            <div class="form-group">
+                {{ form.student.label(class="form-control-label") }}
+                {% if form.student.errors %}
+                    {{ form.student(class="form-control form-control-sm is-invalid") }}
+                    <div class="invalid-feedback">
+                        {% for error in form.student.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    {{ form.student(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+
+
+
+
+
+<!--Add or Remove Button-->
+            <div class="btn-group-submit btn-block" role="group" >    
+                <div class = "form-group">  
+                    {{ form.submit(class="btn btn-success" ) }}   
+                </div>
+            </div>
+        </form>
+    </form>
+</div>
+
+{% endblock page_content %}
