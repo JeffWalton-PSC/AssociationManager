@@ -25,7 +25,7 @@ class Export(FlaskForm):
     submit = SubmitField("DOWNLOAD")
 
 
-from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response, session
+from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response, session, redirect
 from assoc_mgr.queries import associations, yearterms, association_export
 from datetime import datetime
 
@@ -63,23 +63,36 @@ def index():
         association = form.association.data
         session['association'] = association
 
-        df_export = association_export(year, term, association, connection)
-        df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+        print(request.form)
 
-        if not(df_export.empty):
-            result = df_export.to_dict('split')['data']
-            return render_template('roster/index.html',
-                form = form,
-                association = f"{association}",
-                yearterm = f"{yearterm}",
-                title = f"{association} - {term} {year}", 
-                result = result,
-                resultlength = f"{str(len(result))} result(s) found."
-                )
+        if 'view_roster' in request.form:
+        
+            df_export = association_export(year, term, association, connection)
+            df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
 
+            if not(df_export.empty):
+                result = df_export.to_dict('split')['data']
+                return render_template('roster/index.html',
+                    form = form,
+                    association = f"{association}",
+                    yearterm = f"{yearterm}",
+                    title = f"{association} - {term} {year}", 
+                    result = result,
+                    resultlength = f"{str(len(result))} result(s) found."
+                    )
+
+            else:
+                flash("No results were returned. Please try again.")
+                return render_template('roster/index.html', title = 'Roster', form = form)
+
+        elif 'add_students' in request.form:
+
+            return redirect("roster.add", )
+            
         else:
-            flash("No results were returned. Please try again.")
+            flash("Error", "error")
             return render_template('roster/index.html', title = 'Roster', form = form)
+        
     else:
         return render_template('roster/index.html', title = 'Roster', form = form)
 
