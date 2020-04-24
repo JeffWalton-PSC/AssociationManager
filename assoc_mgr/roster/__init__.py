@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, SelectField
+from wtforms import SubmitField, SelectField, BooleanField
 from wtforms.validators import DataRequired, ValidationError
 
 
@@ -9,7 +9,12 @@ class Roster(FlaskForm):
                         choices=[], validators=[DataRequired()])
     association = SelectField ('Association', choices=[], 
                                 default = None, validators=[DataRequired()])
-    submit = SubmitField("View Roster")
+    view_roster = SubmitField("View Roster")
+    delete = BooleanField("Delete")
+    add_students = SubmitField("Add Student(s)")
+    delete_students = SubmitField("Delete Student(s)")
+    save_roster = SubmitField("Save as .csv")
+    new_search = SubmitField("New Search")
 
 
 class Export(FlaskForm):
@@ -80,104 +85,104 @@ def index():
 
 
 
-@bp.route("/roster", methods = ['GET', 'POST'])
-#@login_required #Forces user to login to navigate to roster page.
-def roster():
+# @bp.route("/roster", methods = ['GET', 'POST'])
+# #@login_required #Forces user to login to navigate to roster page.
+# def roster():
 
-    form = Roster()
-    form.yearterm.choices = session['yearterm_list']
-    form.association.choices = session['association_list']
+#     form = Roster()
+#     form.yearterm.choices = session['yearterm_list']
+#     form.association.choices = session['association_list']
 
-    if form.validate_on_submit():
-        yearterm = form.yearterm.data
-        year = yearterm.split('.')[0]
-        term = yearterm.split('.')[1]
-        association = form.association.data
+#     if form.validate_on_submit():
+#         yearterm = form.yearterm.data
+#         year = yearterm.split('.')[0]
+#         term = yearterm.split('.')[1]
+#         association = form.association.data
 
-        df_export = association_export(year, term, association, connection)
-        df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+#         df_export = association_export(year, term, association, connection)
+#         df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
 
-        if not(df_export.empty):
-            result = df_export.to_dict('split')['data']
-            return render_template('roster/display.html', 
-                association = f"{association}",
-                yearterm = f"{yearterm}",
-                title = f"{association} - {term} {year}", 
-                result = result,
-                resultlength = f"{str(len(result))} result(s) found."
-                )
+#         if not(df_export.empty):
+#             result = df_export.to_dict('split')['data']
+#             return render_template('roster/display.html', 
+#                 association = f"{association}",
+#                 yearterm = f"{yearterm}",
+#                 title = f"{association} - {term} {year}", 
+#                 result = result,
+#                 resultlength = f"{str(len(result))} result(s) found."
+#                 )
 
-        else:
-            flash("No results were returned. Please try again.")
-            return render_template('roster/roster.html', title = 'Roster', form = form)
-    else:
-        return render_template('roster/roster.html', title = 'Roster', form = form)
+#         else:
+#             flash("No results were returned. Please try again.")
+#             return render_template('roster/roster.html', title = 'Roster', form = form)
+#     else:
+#         return render_template('roster/roster.html', title = 'Roster', form = form)
 
 
-#Handler for Delete Request
-@bp.route("/roster/display", methods = ['GET', 'POST'])
-#@login_required 
-def display():
+# #Handler for Delete Request
+# @bp.route("/roster/display", methods = ['GET', 'POST'])
+# #@login_required 
+# def display():
 
-    pscid = request.args.get('pscid')
-    lname = request.args.get('lname')
-    fname = request.args.get('fname')
-    association = request.args.get('association')
-    term = request.args.get('term')
-    year = request.args.get('year')
+#     pscid = request.args.get('pscid')
+#     lname = request.args.get('lname')
+#     fname = request.args.get('fname')
+#     association = request.args.get('association')
+#     term = request.args.get('term')
+#     year = request.args.get('year')
  
-    if request.method == 'GET':
-        sql_str = f"""
-        DELETE 
-        FROM ASSOCIATION 
-        WHERE PEOPLE_ORG_CODE_ID = '{pscid}' 
-          AND ASSOCIATION = '{association}' 
-          AND ACADEMIC_TERM = '{term}' 
-          AND ACADEMIC_YEAR = '{year}' 
-        """
+#     if request.method == 'GET':
+#         sql_str = f"""
+#         DELETE 
+#         FROM ASSOCIATION 
+#         WHERE PEOPLE_ORG_CODE_ID = '{pscid}' 
+#           AND ASSOCIATION = '{association}' 
+#           AND ACADEMIC_TERM = '{term}' 
+#           AND ACADEMIC_YEAR = '{year}' 
+#         """
 
-        connection.execute(sql_str)
+#         connection.execute(sql_str)
 
-        flash(f"{lname}, {fname} has been deleted from {association} for {term} {year}.", "danger")
+#         flash(f"{lname}, {fname} has been deleted from {association} for {term} {year}.", "danger")
 
-    return redirect(url_for('roster.roster'))
+#     return redirect(url_for('roster.roster'))
 
 
-@bp.route("/roster/export", methods = ['GET', 'POST'])
-#@login_required
-def export():
+# @bp.route("/roster/export", methods = ['GET', 'POST'])
+# #@login_required
+# def export():
     
-    yearterm = request.args.get('yearterm')
-    association = request.args.get('association')
+#     yearterm = request.args.get('yearterm')
+#     association = request.args.get('association')
 
-    form = Export(yearterm=yearterm, association=association )
+#     form = Export(yearterm=yearterm, association=association )
 
-    form.yearterm.choices = session['yearterm_list']
-    form.association.choices = session['association_list']
+#     form.yearterm.choices = session['yearterm_list']
+#     form.association.choices = session['association_list']
 
-    if form.validate_on_submit():
-        yearterm = form.yearterm.data
-        year = yearterm.split('.')[0]
-        term = yearterm.split('.')[1]
-        association = form.association.data
+#     if form.validate_on_submit():
+#         yearterm = form.yearterm.data
+#         year = yearterm.split('.')[0]
+#         term = yearterm.split('.')[1]
+#         association = form.association.data
 
-        df_export = association_export(year, term, association, connection)
+#         df_export = association_export(year, term, association, connection)
 
-        if not(df_export.empty):
-            df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
-            resp = make_response(df_export.to_csv(index=False))
-            resp.headers["Content-Disposition"] = ( f"attachment; filename={year}{term}_{association}_Roster_{today_str}.csv" )
-            resp.headers["content-Type"] = "text/csv"
-            return resp
+#         if not(df_export.empty):
+#             df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+#             resp = make_response(df_export.to_csv(index=False))
+#             resp.headers["Content-Disposition"] = ( f"attachment; filename={year}{term}_{association}_Roster_{today_str}.csv" )
+#             resp.headers["content-Type"] = "text/csv"
+#             return resp
 
-        else:
-            flash("No results were returned. Please Try again.")
+#         else:
+#             flash("No results were returned. Please Try again.")
  
-    return render_template('roster/export.html', title = 'Export Roster', form = form, yearterm=yearterm, association=association)
+#     return render_template('roster/export.html', title = 'Export Roster', form = form, yearterm=yearterm, association=association)
 
 
-from flask_wtf import FlaskForm
-from wtforms.validators import DataRequired
+# from flask_wtf import FlaskForm
+# from wtforms.validators import DataRequired
 from wtforms import SubmitField, SelectField, SelectMultipleField
 
 class AddStudentForm(FlaskForm):

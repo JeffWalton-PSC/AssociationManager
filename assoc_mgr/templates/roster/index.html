@@ -19,7 +19,7 @@
                 </div>
                 <!-- Submit Form One For Roster Display -->
                 <div class="form-group">
-                    {{ form.submit(class="btn btn-outline-info") }}
+                    {{ form.view_roster(class="btn btn-outline-info") }}
                 </div>
             </fieldset>
         </form>  
@@ -63,24 +63,14 @@
                     </table>
                 </div>
                 <div class="btn-toolbar form-group" >
-                    {{ form.submit(class="btn btn-outline-info") }}
-                    <div class = "btn btn-outline-info" >
-                        <button type ="button" >Delete Student(s)</button>
-                    </div>
-                    <div class = "btn btn-outline-info">
-                        <!-- href="{{url_for('roster.add', yearterm=yearterm, association=association ) }}" -->
-                        <button type ="button" >Add Student(s)</button>
-                    </div>
-                    <div class = "btn btn-outline-info">
-                        <!-- href="{{url_for('roster.export', yearterm=yearterm, association=association ) }}" -->
-                        <button type ="button" >Save as .csv</button>
-                    </div >
+                    {{ form.add_students(class="btn btn-outline-info") }}
+                    {{ form.delete_students(class="btn btn-outline-info") }}
+                    {{ form.save_roster(class="btn btn-outline-info") }}
                 </div>
                 <div class="btn-toolbar" >
-                    <a class = " nav-item nav-link" style = 'color: white;' href="{{url_for('roster.index')}}">
-                        <button class = "btn btn-outline-info" >New Search</button> 
-                    </a>
-                </div>
+                    {{ form.new_search(class="btn btn-outline-info") }}
+                    <!-- href="{{url_for('roster.index')}}"> -->
+                 </div>
             </p>
         </div>         
     </article> 
