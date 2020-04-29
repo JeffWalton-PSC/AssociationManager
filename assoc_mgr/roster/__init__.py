@@ -74,8 +74,8 @@ def index():
                 result = df_export.to_dict('split')['data']
                 return render_template('roster/index.html',
                     form = form,
-                    association = f"{association}",
-                    yearterm = f"{yearterm}",
+                    association = association,
+                    yearterm = yearterm,
                     title = f"{association} - {term} {year}", 
                     result = result,
                     resultlength = f"{str(len(result))} result(s) found."
@@ -87,14 +87,14 @@ def index():
 
         elif 'add_students' in request.form:
 
-            return redirect("roster.add", )
-            
+            return render_template("/roster/add.html", association=association, yearterm=yearterm )
+
         else:
             flash("Error", "error")
-            return render_template('roster/index.html', title = 'Roster', form = form)
+            return render_template('/roster/index.html', title = 'Roster', form = form)
         
     else:
-        return render_template('roster/index.html', title = 'Roster', form = form)
+        return render_template('/roster/index.html', title = 'Roster', form = form)
 
 
 

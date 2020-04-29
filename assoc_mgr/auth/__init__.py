@@ -28,7 +28,7 @@ from assoc_mgr.queries import associations, yearterms, association_export
 
 
 class LoginForm(FlaskForm):
-    username = StringField('Email', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
     remember =  BooleanField('Remember This Computer')
@@ -129,6 +129,9 @@ def index():
 
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
+    
+    form = LoginForm()
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -148,11 +151,11 @@ def login():
             session['user_id'] = user['id']
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
             session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
-            return redirect(url_for('roster.roster'))
+            return redirect(url_for('roster.index'))
 
         flash(error)
 
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', form=form )
 
 
 @bp.before_app_request

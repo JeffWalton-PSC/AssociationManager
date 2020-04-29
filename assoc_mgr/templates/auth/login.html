@@ -1,15 +1,16 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Log In{% endblock %}</h1>
+    <h2>Log In</h2>
 {% endblock %}
 
-{% block content %}
-  <form method="post">
-    <label for="username">Username</label>
-    <input name="username" id="username" required>
-    <label for="password">Password</label>
-    <input type="password" name="password" id="password" required>
-    <input type="submit" value="Log In">
-  </form>
-{% endblock %}
+{% block page_content %}
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        {{ form.username.label(class="form-control-label") }}
+        {{ form.username(class="form-control") }}
+        {{ form.password.label(class="form-control-label") }}
+        {{ form.password(class="form-control") }}
+        {{ form.submit(class="btn btn-success" ) }}
+    </form>
+{% endblock page_content %}
