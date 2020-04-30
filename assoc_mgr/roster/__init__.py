@@ -11,8 +11,8 @@ class Roster(FlaskForm):
                                 default = None, validators=[DataRequired()])
     view_roster = SubmitField("View Roster")
     delete = BooleanField("Delete")
-    add_students = SubmitField("Add Student(s)")
-    delete_students = SubmitField("Delete Student(s)")
+    add_students = SubmitField("Add Students")
+    delete_students = SubmitField("Delete Students")
     save_roster = SubmitField("Save as .csv")
     new_search = SubmitField("New Search")
 
@@ -205,7 +205,8 @@ class AddStudentForm(FlaskForm):
                                 default = None, validators=[DataRequired()])
     student = SelectMultipleField('Student Names', choices = [], 
                                 default = (None, 'Please Select Student(s)'), validators=[DataRequired()])
-    submit = SubmitField('Add Student(s)') 
+    submit = SubmitField('Add Students') 
+    cancel = SubmitField('Cancel')
 
 
 from flask import render_template, url_for, flash, redirect, Blueprint
@@ -321,4 +322,4 @@ def add():
             return redirect(url_for('roster.index'))
 
     else:
-        return render_template('/roster/add.html', title = 'Add', form = form)
+        return render_template('/roster/add.html', form = form)

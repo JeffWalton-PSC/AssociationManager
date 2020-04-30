@@ -7,10 +7,22 @@
 {% block page_content %}
     <form method="POST">
         {{ form.hidden_tag() }}
-        {{ form.username.label(class="form-control-label") }}
-        {{ form.username(class="form-control") }}
-        {{ form.password.label(class="form-control-label") }}
-        {{ form.password(class="form-control") }}
-        {{ form.submit(class="btn btn-success" ) }}
+        <div class="row">
+            <div class="form-group col-xs-3">
+                {{ form.username.label(class="form-control-label") }}
+                {{ form.username(class="form-control") }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-xs-3">
+                {{ form.password.label(class="form-control-label") }}
+                {{ form.password(class="form-control") }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="form-group col-xs-3">
+                {{ form.submit(class="btn btn-success" ) }}
+            </div>
+        </div>
     </form>
 {% endblock page_content %}
