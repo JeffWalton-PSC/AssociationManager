@@ -1,48 +1,14 @@
-from flask_wtf import FlaskForm
-from wtforms import SubmitField, SelectField, BooleanField, SelectMultipleField
-from wtforms.validators import DataRequired, ValidationError
-
-
-
-class Roster(FlaskForm):       
-    yearterm = SelectField ('Year.Term', 
-                        choices=[], validators=[DataRequired()])
-    association = SelectField ('Association', choices=[], 
-                                default = None, validators=[DataRequired()])
-    view_roster = SubmitField("View Roster")
-    delete = BooleanField("Delete")
-    add_students = SubmitField("Add Students")
-    delete_students = SubmitField("Delete Students")
-    save_roster = SubmitField("Save as .csv")
-    new_search = SubmitField("New Search")
-
-
-class AddStudent(FlaskForm):
-    students = SelectMultipleField('Student Names', choices = [], default = (None, 'Please Select Students'), validators=[])
-    submit = SubmitField('Add Students')
-    cancel = SubmitField('Cancel')
-
-
-class Export(FlaskForm):
-    yearterm = SelectField ('Year.Term', 
-                        choices=[], validators=[DataRequired()])
-    association = SelectField ('Association', choices=[], 
-                                default = None, validators=[DataRequired()])
-    submit = SubmitField("DOWNLOAD")
-
-
 from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response, session, redirect
-from assoc_mgr.queries import associations, yearterms, association_export
+#from flask_login import login_user, current_user, logout_user, login_required
+#from assoc_mgr.auth import login_required
+#from assoc_mgr.db import get_db
+from assoc_mgr.roster.forms import Roster, AddStudent
+from assoc_mgr.queries import students, associations, yearterms, association_export, association_members
 from datetime import datetime
+import pandas as pd
 
-from assoc_mgr.auth import login_required
-from assoc_mgr.db import get_db
 
 bp = Blueprint('roster', __name__)
-
-# @bp.route('/')
-# def index():
-#     return render_template('roster/index.html')
 
 
 from assoc_mgr import connection as assoc_mgr_conn
@@ -152,45 +118,6 @@ def index():
         return render_template('roster/index.html', title='Roster', form=form)
 
 
-# #Handler for Delete Request
-# @bp.route("/roster/display", methods = ['GET', 'POST'])
-# #@login_required 
-# def display():
-
-#     pscid = request.args.get('pscid')
-#     lname = request.args.get('lname')
-#     fname = request.args.get('fname')
-#     association = request.args.get('association')
-#     term = request.args.get('term')
-#     year = request.args.get('year')
- 
-#     if request.method == 'GET':
-#         sql_str = f"""
-#         DELETE 
-#         FROM ASSOCIATION 
-#         WHERE PEOPLE_ORG_CODE_ID = '{pscid}' 
-#           AND ASSOCIATION = '{association}' 
-#           AND ACADEMIC_TERM = '{term}' 
-#           AND ACADEMIC_YEAR = '{year}' 
-#         """
-
-#         connection.execute(sql_str)
-
-#         flash(f"{lname}, {fname} has been deleted from {association} for {term} {year}.", "danger")
-
-#     return redirect(url_for('roster.roster'))
-
-
-
-
-from flask import render_template, url_for, flash, redirect, Blueprint
-#from assoc_mgr.add.forms import AddStudentForm
-from assoc_mgr.queries import students, associations, yearterms, association_members
-from flask_login import login_user, current_user, logout_user, login_required
-from datetime import datetime
-import pandas as pd
-
-
 
 @bp.route("/roster/add", methods =['GET', 'POST'])
 #@login_required #Forces user to login to navigate to update page.
@@ -223,7 +150,7 @@ def add(yearterm=None, association=None):
 
         assoc_members = association_members(year, term, association, connection)
 
-        add_list = form.student.data
+        add_list = form.students.data
 
         if len(add_list) > 0:
 
@@ -299,4 +226,4 @@ def add(yearterm=None, association=None):
             return redirect(url_for('roster.index'))
 
     else:
-        return render_template('/roster/index.html', form = form)
+        return render_template('/roster/add.html', form = form)
