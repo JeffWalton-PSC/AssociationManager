@@ -48,10 +48,6 @@ bp = Blueprint('roster', __name__)
 from assoc_mgr import connection as assoc_mgr_conn
 connection = assoc_mgr_conn
 
-today_str = datetime.now().strftime("%Y%m%d")
-
-#df_yearterm = yearterms(connection)
-#df_association = associations(connection)
 
 @bp.route("/roster/index", methods = ['GET', 'POST'])
 #@login_required #Forces user to login to navigate to roster page.
@@ -71,13 +67,43 @@ def index():
 
         print(request.form)
 
-        if 'view_roster' in request.form:
-        
-            df_export = association_export(year, term, association, connection)
-            df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+        if 'new_search' in request.form:
+            return redirect(url_for("roster.index"))
 
-            if not(df_export.empty):
-                result = df_export.to_dict('split')['data']
+        elif 'add_students' in request.form:
+            flash("Add Students", "info")
+            return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
+
+        elif 'delete_students' in request.form:
+
+            del_list = request.form.getlist('delete_student')
+            print(del_list)
+            if (del_list):
+                sql_str = ""
+                for id in del_list:
+                    sql_str += f"""
+                    DELETE 
+                    FROM ASSOCIATION 
+                    WHERE PEOPLE_ORG_CODE_ID = '{id}' 
+                    AND ASSOCIATION = '{association}' 
+                    AND ACADEMIC_TERM = '{term}' 
+                    AND ACADEMIC_YEAR = '{year}' ;
+                    """
+
+                #connection.execute(sql_str)
+                print(sql_str)
+                flash(f"{len(del_list)} have been deleted from {association} for {term} {year}.", "danger")
+                flash(f"Delete Students: {del_list}", "warn")
+
+                # refresh roster
+                df_export = association_export(year, term, association, connection)
+                if not(df_export.empty):
+                    df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+                    result = df_export.to_dict('split')['data']
+                else:
+                    flash("No results were returned. Please try again.")
+                    return render_template('roster/index.html', title='Roster', form=form)
+                
                 return render_template('roster/index.html',
                     form = form,
                     association = association,
@@ -88,66 +114,42 @@ def index():
                     )
 
             else:
-                flash("No results were returned. Please try again.")
-                return render_template('roster/index.html', title='Roster', form=form)
+                flash(f"No students selected for deletion.","warn")
 
-        elif 'add_students' in request.form:
-            flash("Add Students", "info")
-            return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
+        
+        df_export = association_export(year, term, association, connection)
 
-        elif 'delete_students' in request.form:
-            flash("Delete Students", "warn")
-            return render_template("roster/index.html", title='Roster', form=form )
+        if not(df_export.empty):
+            df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
+            result = df_export.to_dict('split')['data']
 
-        elif 'save_roster' in request.form:
-            flash("Save Roster", "info")
-            flash(f"result size: {str(len(result))}", "warn")
-            return render_template("roster/index.html", title='Roster', form=form )
+            if 'save_roster' in request.form:
+                today_str = datetime.now().strftime("%Y%m%d")
+                filename = f"{year}{term}_{association}_Roster_{today_str}.csv"
+                resp = make_response(df_export.to_csv(index=False))
+                resp.headers["Content-Disposition"] = ( f"attachment; filename={filename}" )
+                resp.headers["content-Type"] = "text/csv"
+                return resp
 
-        elif 'new_search' in request.form:
-            return redirect(url_for("roster.index"))
+            else: # 'view_roster' in request.form:
+                return render_template('roster/index.html',
+                    form = form,
+                    association = association,
+                    yearterm = yearterm,
+                    title = f"{association} - {term} {year}", 
+                    result = result,
+                    resultlength = f"{str(len(result))} result(s) found."
+                    )
 
         else:
-            flash("Error: Button not known.", "error")
+            flash("No results were returned. Please try again.")
             return render_template('roster/index.html', title='Roster', form=form)
+
+        flash("Error: Button not known.", "error")
+        return render_template('roster/index.html', title='Roster', form=form)
        
     else:
         return render_template('roster/index.html', title='Roster', form=form)
-
-
-
-# @bp.route("/roster", methods = ['GET', 'POST'])
-# #@login_required #Forces user to login to navigate to roster page.
-# def roster():
-
-#     form = Roster()
-#     form.yearterm.choices = session['yearterm_list']
-#     form.association.choices = session['association_list']
-
-#     if form.validate_on_submit():
-#         yearterm = form.yearterm.data
-#         year = yearterm.split('.')[0]
-#         term = yearterm.split('.')[1]
-#         association = form.association.data
-
-#         df_export = association_export(year, term, association, connection)
-#         df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
-
-#         if not(df_export.empty):
-#             result = df_export.to_dict('split')['data']
-#             return render_template('roster/display.html', 
-#                 association = f"{association}",
-#                 yearterm = f"{yearterm}",
-#                 title = f"{association} - {term} {year}", 
-#                 result = result,
-#                 resultlength = f"{str(len(result))} result(s) found."
-#                 )
-
-#         else:
-#             flash("No results were returned. Please try again.")
-#             return render_template('roster/roster.html', title = 'Roster', form = form)
-#     else:
-#         return render_template('roster/roster.html', title = 'Roster', form = form)
 
 
 # #Handler for Delete Request
@@ -179,41 +181,6 @@ def index():
 #     return redirect(url_for('roster.roster'))
 
 
-# @bp.route("/roster/export", methods = ['GET', 'POST'])
-# #@login_required
-# def export():
-    
-#     yearterm = request.args.get('yearterm')
-#     association = request.args.get('association')
-
-#     form = Export(yearterm=yearterm, association=association )
-
-#     form.yearterm.choices = session['yearterm_list']
-#     form.association.choices = session['association_list']
-
-#     if form.validate_on_submit():
-#         yearterm = form.yearterm.data
-#         year = yearterm.split('.')[0]
-#         term = yearterm.split('.')[1]
-#         association = form.association.data
-
-#         df_export = association_export(year, term, association, connection)
-
-#         if not(df_export.empty):
-#             df_export = df_export.rename(columns={'PEOPLE_ORG_CODE_ID': 'PSC_ID'})
-#             resp = make_response(df_export.to_csv(index=False))
-#             resp.headers["Content-Disposition"] = ( f"attachment; filename={year}{term}_{association}_Roster_{today_str}.csv" )
-#             resp.headers["content-Type"] = "text/csv"
-#             return resp
-
-#         else:
-#             flash("No results were returned. Please Try again.")
- 
-#     return render_template('roster/export.html', title = 'Export Roster', form = form, yearterm=yearterm, association=association)
-
-
-# from flask_wtf import FlaskForm
-# from wtforms.validators import DataRequired
 
 
 from flask import render_template, url_for, flash, redirect, Blueprint
@@ -223,11 +190,6 @@ from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
 import pandas as pd
 
-today = datetime.now()
-now = str(today.year)
-one_year_ago = str(today.year - 1)
-df_student = students(now, one_year_ago, connection)
-student_list = [tuple(s) for s in df_student[['PEOPLE_CODE_ID', 'STUDENT']].to_numpy()]
 
 
 @bp.route("/roster/add", methods =['GET', 'POST'])
@@ -236,7 +198,11 @@ def add(yearterm=None, association=None):
 
     form = AddStudent()
 
-
+    today = datetime.now()
+    now = str(today.year)
+    one_year_ago = str(today.year - 1)
+    df_student = students(now, one_year_ago, connection)
+    student_list = [tuple(s) for s in df_student[['PEOPLE_CODE_ID', 'STUDENT']].to_numpy()]
 
     form.students.choices = student_list
 

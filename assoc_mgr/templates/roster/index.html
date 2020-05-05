@@ -8,19 +8,17 @@
         {{ form.hidden_tag() }}
         {{ form.csrf_token }}
         {{ form.options }}
-        <fieldset class="form-group">
-            <div class="form-group">
-                <!-- Year.Term -->
-                {{ form.yearterm.label(class="form-control-label")}}
-                {{ form.yearterm(class="form-control", style="width:auto;") }}
-                <!-- Association -->
-                {{ form.association.label(class="form-control-label")}}
-                {{ form.association(class="form-control", style="width:auto;") }}
-            </div>
-            <div class="form-group">
-                {{ form.view_roster(class="btn btn-outline-info") }}
-            </div>
-        </fieldset>
+        <div class="form-group">
+            <!-- Year.Term -->
+            {{ form.yearterm.label(class="form-control-label")}}
+            {{ form.yearterm(class="form-control", style="width:auto;") }}
+            <!-- Association -->
+            {{ form.association.label(class="form-control-label")}}
+            {{ form.association(class="form-control", style="width:auto;") }}
+        </div>
+        <div class="form-group">
+            {{ form.view_roster(class="btn btn-outline-info") }}
+        </div>
     </div>
 
     {% if result %}
@@ -53,7 +51,7 @@
                                 <td>{{ item[4] }}</td>
                                 <td>{{ item[5] }}</td>
                                 <td> 
-                                    <input type="checkbox" value=item[0] name="delete_student">
+                                    <input type="checkbox" value="{{ item[0] }}" name="delete_student">
                                 </td>                
                             </tr>          
                         {% endfor %}                  
