@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import SubmitField, SelectField, BooleanField
+from wtforms import SubmitField, SelectField, BooleanField, SelectMultipleField
 from wtforms.validators import DataRequired, ValidationError
 
 
@@ -15,6 +15,12 @@ class Roster(FlaskForm):
     delete_students = SubmitField("Delete Students")
     save_roster = SubmitField("Save as .csv")
     new_search = SubmitField("New Search")
+
+
+class AddStudent(FlaskForm):
+    students = SelectMultipleField('Student Names', choices = [], default = (None, 'Please Select Students'), validators=[])
+    submit = SubmitField('Add Students')
+    cancel = SubmitField('Cancel')
 
 
 class Export(FlaskForm):
@@ -52,8 +58,8 @@ today_str = datetime.now().strftime("%Y%m%d")
 def index():
 
     form = Roster()
-    form.yearterm.choices = session['yearterm_list']
-    form.association.choices = session['association_list']
+    form.yearterm.choices = session.get('yearterm_list')
+    form.association.choices = session.get('association_list')
 
     if form.validate_on_submit():
         yearterm = form.yearterm.data
@@ -83,18 +89,30 @@ def index():
 
             else:
                 flash("No results were returned. Please try again.")
-                return render_template('roster/index.html', title = 'Roster', form = form)
+                return render_template('roster/index.html', title='Roster', form=form)
 
         elif 'add_students' in request.form:
+            flash("Add Students", "info")
+            return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
 
-            return render_template("/roster/add.html", association=association, yearterm=yearterm )
+        elif 'delete_students' in request.form:
+            flash("Delete Students", "warn")
+            return render_template("roster/index.html", title='Roster', form=form )
+
+        elif 'save_roster' in request.form:
+            flash("Save Roster", "info")
+            flash(f"result size: {str(len(result))}", "warn")
+            return render_template("roster/index.html", title='Roster', form=form )
+
+        elif 'new_search' in request.form:
+            return redirect(url_for("roster.index"))
 
         else:
-            flash("Error", "error")
-            return render_template('/roster/index.html', title = 'Roster', form = form)
-        
+            flash("Error: Button not known.", "error")
+            return render_template('roster/index.html', title='Roster', form=form)
+       
     else:
-        return render_template('/roster/index.html', title = 'Roster', form = form)
+        return render_template('roster/index.html', title='Roster', form=form)
 
 
 
@@ -196,17 +214,6 @@ def index():
 
 # from flask_wtf import FlaskForm
 # from wtforms.validators import DataRequired
-from wtforms import SubmitField, SelectField, SelectMultipleField
-
-class AddStudentForm(FlaskForm):
-    yearterm = SelectField ('Year.Term', 
-                        choices=[], validators=[DataRequired()])
-    association = SelectField ('Association', choices=[], 
-                                default = None, validators=[DataRequired()])
-    student = SelectMultipleField('Student Names', choices = [], 
-                                default = (None, 'Please Select Student(s)'), validators=[DataRequired()])
-    submit = SubmitField('Add Students') 
-    cancel = SubmitField('Cancel')
 
 
 from flask import render_template, url_for, flash, redirect, Blueprint
@@ -216,38 +223,41 @@ from flask_login import login_user, current_user, logout_user, login_required
 from datetime import datetime
 import pandas as pd
 
-
-
 today = datetime.now()
 now = str(today.year)
 one_year_ago = str(today.year - 1)
-two_years_ago = str(today.year - 2)
+df_student = students(now, one_year_ago, connection)
+student_list = [tuple(s) for s in df_student[['PEOPLE_CODE_ID', 'STUDENT']].to_numpy()]
 
 
 @bp.route("/roster/add", methods =['GET', 'POST'])
 #@login_required #Forces user to login to navigate to update page.
-def add():
+def add(yearterm=None, association=None):
 
-    form = AddStudentForm()
+    form = AddStudent()
 
-    df_student = students(now, one_year_ago, connection)
-    form.yearterm.choices = session['yearterm_list']
-    form.association.choices = session['association_list']
-    form.student.choices = [tuple(s) for s in df_student[['PEOPLE_CODE_ID', 'STUDENT']].to_numpy()]
 
+
+    form.students.choices = student_list
+
+    if not yearterm:
+        yearterm = session.get('yearterm')
+
+    if not association:
+        association = session.get('association')
 
     if form.validate_on_submit():
 
-        yearterm = form.yearterm.data
-        session['yearterm'] = yearterm
         year = yearterm.split('.')[0]
         term = yearterm.split('.')[1]
-        association = form.association.data
-        session['association'] = association
-        
-        add_list = form.student.data
+
+        print('ADD function', request.form)
+        if 'cancel' in request.form:
+            redirect(url_for('roster.index', ), )
 
         assoc_members = association_members(year, term, association, connection)
+
+        add_list = form.student.data
 
         if len(add_list) > 0:
 
@@ -311,15 +321,16 @@ def add():
 
             insert_sql += ';'
 
+            print(insert_sql)
             connection.execute(insert_sql)
 
             flash(f'{len(add_list)} students have been added to {association} for {yearterm}', 'info')
 
-            return redirect(url_for('roster.index'))
+            return redirect(url_for('roster.index'), )
 
         else:
             flash('No students selected.','danger')
             return redirect(url_for('roster.index'))
 
     else:
-        return render_template('/roster/add.html', form = form)
+        return render_template('/roster/index.html', form = form)

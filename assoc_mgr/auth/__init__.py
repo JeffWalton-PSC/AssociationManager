@@ -1,5 +1,7 @@
 import functools
 import logging
+from datetime import datetime
+
 
 from flask import current_app, abort, send_file, make_response
 from flask import (
@@ -21,9 +23,8 @@ from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextA
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from flask_login import current_user
 #from flask_ldap3_login import AuthenticationResponseStatus
-import logging
 
-from assoc_mgr.queries import associations, yearterms, association_export
+from assoc_mgr.queries import associations, yearterms, students, association_export
 
 
 
@@ -151,6 +152,7 @@ def login():
             session['user_id'] = user['id']
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
             session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
+            print(session)
             return redirect(url_for('roster.index'))
 
         flash(error)

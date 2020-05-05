@@ -9,18 +9,18 @@
         {{ form.hidden_tag() }}
         <div class="form-group">
             <!--YearTerm-->
-            {{ form.yearterm.label(class="form-control-label") }}
-            {{ form.yearterm(class="form-control", style="width:auto;") }}
+            <div class="form-control-label"><b>Year.Term</b></div>
+            <div >{{ yearterm }}</div>
             <!--Association-->
-            {{ form.association.label(class="form-control-label") }}
-            {{ form.association(class="form-control", style="width:auto;") }}
+            <div class="form-control-label"><b>Association</b></div>
+            <div >{{ association }}</div>
         </div>
 
         <!--Students-->
         <div class="form-group">
-            {{ form.student.label(class="form-control-label") }}<br>
+            {{ form.students.label(class="form-control-label") }}<br>
             Select students to add.  To add multiple students, <kbd style="background-color: lightgrey; color: black;">Ctrl</kbd>-click each student.<br>
-            {{ form.student(class="form-control", size="20", style="width:auto;") }}
+            {{ form.students(class="form-control", size="20", style="width:auto;") }}
         </div>
 
         <div class = "form-group">  
