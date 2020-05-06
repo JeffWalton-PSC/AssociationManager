@@ -19,9 +19,22 @@ connection = assoc_mgr_conn
 #@login_required #Forces user to login to navigate to roster page.
 def index():
 
+    print(f"index() request: {request}" )
     form = Roster()
     form.yearterm.choices = session.get('yearterm_list')
     form.association.choices = session.get('association_list')
+
+    if "yearterm" in request.args:
+        yearterm = request.args['yearterm']
+        form.yearterm.data = yearterm
+    else:
+        yearterm = None
+    if "association" in request.args:
+        association = request.args['association']
+        form.association.data = association
+    else:
+        association = None
+
 
     if form.validate_on_submit():
         yearterm = form.yearterm.data
@@ -37,8 +50,10 @@ def index():
             return redirect(url_for("roster.index"))
 
         elif 'add_students' in request.form:
-            flash("Add Students", "info")
-            return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
+            print("add_students button")
+            #flash("Add Students", "info")
+            #return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
+            return redirect(url_for('roster.add', association=association, yearterm=yearterm))
 
         elif 'delete_students' in request.form:
 
@@ -115,14 +130,15 @@ def index():
         return render_template('roster/index.html', title='Roster', form=form)
        
     else:
-        return render_template('roster/index.html', title='Roster', form=form)
+        return render_template('roster/index.html', form=form, yearterm=yearterm, association=association)
 
 
 
 @bp.route("/roster/add", methods =['GET', 'POST'])
 #@login_required #Forces user to login to navigate to update page.
-def add(yearterm=None, association=None):
+def add():
 
+    print(f"add() request: {request}" )
     form = AddStudent()
 
     today = datetime.now()
@@ -133,20 +149,21 @@ def add(yearterm=None, association=None):
 
     form.students.choices = student_list
 
-    if not yearterm:
-        yearterm = session.get('yearterm')
-
-    if not association:
-        association = session.get('association')
+    if "yearterm" in request.args:
+        yearterm = request.args['yearterm']
+    if "association" in request.args:
+        association = request.args['association']
+    
 
     if form.validate_on_submit():
 
         year = yearterm.split('.')[0]
         term = yearterm.split('.')[1]
 
-        print('ADD function', request.form)
+        print(f"add() request.form: {request.form}")
         if 'cancel' in request.form:
-            redirect(url_for('roster.index', ), )
+#            return render_template('roster/index.html', title='Roster', form=Roster(), yearterm=yearterm, association=association)
+            return redirect(url_for('roster.index', association=association, yearterm=yearterm))
 
         assoc_members = association_members(year, term, association, connection)
 
@@ -218,12 +235,12 @@ def add(yearterm=None, association=None):
             connection.execute(insert_sql)
 
             flash(f'{len(add_list)} students have been added to {association} for {yearterm}', 'info')
-
-            return redirect(url_for('roster.index'), )
+            flash(f'{add_list} have been added to {association} for {yearterm}', 'info')
+            return redirect(url_for('roster.index', association=association, yearterm=yearterm))
 
         else:
             flash('No students selected.','danger')
             return redirect(url_for('roster.index'))
 
     else:
-        return render_template('/roster/add.html', form = form)
+        return render_template('/roster/add.html', form = form, yearterm=yearterm, association=association)
