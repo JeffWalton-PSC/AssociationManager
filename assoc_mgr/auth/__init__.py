@@ -1,6 +1,7 @@
 import functools
 import logging
 from datetime import datetime
+from loguru import logger
 
 
 from flask import current_app, abort, send_file, make_response
@@ -144,6 +145,7 @@ def login():
 
         if user is None:
             error = 'Incorrect username.'
+            logger.error(f"{username}: Incorrect username.")
         # elif not check_password_hash(user['password'], password):
         #     error = 'Incorrect password.'
 
@@ -152,7 +154,7 @@ def login():
             session['user_id'] = user['id']
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
             session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
-            print(session)
+            logger.info(f"{username} (user_id={session['user_id']}) logged in.")
             return redirect(url_for('roster.index'))
 
         flash(error)
@@ -174,6 +176,7 @@ def load_logged_in_user():
 
 @bp.route('/logout')
 def logout():
+    logger.info(f"{session['user_id']} logged out")
     session.clear()
     return redirect(url_for('auth.login'))
 

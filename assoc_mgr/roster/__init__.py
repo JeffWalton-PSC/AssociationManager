@@ -6,6 +6,7 @@ from assoc_mgr.roster.forms import Roster, AddStudent
 from assoc_mgr.queries import students, associations, yearterms, association_export, association_members
 from datetime import datetime
 import pandas as pd
+from loguru import logger
 
 
 bp = Blueprint('roster', __name__)
@@ -19,7 +20,6 @@ connection = assoc_mgr_conn
 #@login_required #Forces user to login to navigate to roster page.
 def index():
 
-    print(f"index() request: {request}" )
     form = Roster()
     form.yearterm.choices = session.get('yearterm_list')
     form.association.choices = session.get('association_list')
@@ -44,21 +44,15 @@ def index():
         association = form.association.data
         session['association'] = association
 
-        print(request.form)
-
         if 'new_search' in request.form:
             return redirect(url_for("roster.index"))
 
         elif 'add_students' in request.form:
-            print("add_students button")
-            #flash("Add Students", "info")
-            #return render_template("roster/add.html", form=AddStudent(), association=association, yearterm=yearterm )
             return redirect(url_for('roster.add', association=association, yearterm=yearterm))
 
         elif 'delete_students' in request.form:
 
             del_list = request.form.getlist('delete_student')
-            print(del_list)
             if (del_list):
                 sql_str = ""
                 for id in del_list:
@@ -71,11 +65,10 @@ def index():
                     AND ACADEMIC_YEAR = '{year}' ;
                     """
 
-                #connection.execute(sql_str)
-                print(sql_str)
-                flash(f"{len(del_list)} have been deleted from {association} for {term} {year}.", "danger")
-                flash(f"Delete Students: {del_list}", "warn")
-
+                connection.execute(sql_str)
+                logger.info(f"{del_list} have been deleted from {association} for {term} {year}.")
+                flash(f"{del_list} have been deleted from {association} for {term} {year}.", "info")
+                
                 # refresh roster
                 df_export = association_export(year, term, association, connection)
                 if not(df_export.empty):
@@ -110,6 +103,7 @@ def index():
                 resp = make_response(df_export.to_csv(index=False))
                 resp.headers["Content-Disposition"] = ( f"attachment; filename={filename}" )
                 resp.headers["content-Type"] = "text/csv"
+                logger.info(f"Roster for {association}-{term} {year} exported.")
                 return resp
 
             else: # 'view_roster' in request.form:
@@ -138,7 +132,6 @@ def index():
 #@login_required #Forces user to login to navigate to update page.
 def add():
 
-    print(f"add() request: {request}" )
     form = AddStudent()
 
     today = datetime.now()
@@ -160,7 +153,6 @@ def add():
         year = yearterm.split('.')[0]
         term = yearterm.split('.')[1]
 
-        print(f"add() request.form: {request.form}")
         if 'cancel' in request.form:
 #            return render_template('roster/index.html', title='Roster', form=Roster(), yearterm=yearterm, association=association)
             return redirect(url_for('roster.index', association=association, yearterm=yearterm))
@@ -231,10 +223,9 @@ def add():
 
             insert_sql += ';'
 
-            print(insert_sql)
             connection.execute(insert_sql)
 
-            flash(f'{len(add_list)} students have been added to {association} for {yearterm}', 'info')
+            logger.info(f"{add_list} have been added to {association} for {term} {year}.")
             flash(f'{add_list} have been added to {association} for {yearterm}', 'info')
             return redirect(url_for('roster.index', association=association, yearterm=yearterm))
 
