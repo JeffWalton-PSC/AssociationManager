@@ -12,8 +12,11 @@ from flask_bootstrap import Bootstrap
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_sqlalchemy import SQLAlchemy
 from loguru import logger
+from instance.config import config
 
-
+bootstrap = Bootstrap()
+db = SQLAlchemy()
+toolbar = DebugToolbarExtension()
 
 
 # bcrypt = Bcrypt()
@@ -28,7 +31,7 @@ engine = create_engine('sqlite:///data/Campus6_mock.db?check_same_thread=False')
 connection = engine.connect()
 
 
-def create_app(test_config=None):
+def create_app(config_name='default'):
     app = Flask(__name__, instance_relative_config=True)
 
     # ensure the instance folder exists
@@ -37,13 +40,9 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    if test_config is None:
-        # load the instance config, if it exists, when not testing
-        app.config.from_pyfile('config.py', silent=True)
-        app.config['SQLALCHEMY_DATABASE_URI'] = os.path.join(app.instance_path, 'data.sqlite')
-    else:
-        # load the test config if passed in
-        app.config.from_mapping(test_config)
+    #app.config.from_pyfile('config.py', silent=True)
+    app.config.from_object(config[config_name])
+    config[config_name].init_app(app)
     
     logger.add(os.path.join(app.instance_path, "logs/assoc_mgr.log"), 
         rotation="monthly", 
@@ -51,13 +50,12 @@ def create_app(test_config=None):
         )
     logger.info(f"Start")
 
-    bootstrap = Bootstrap(app)
+    bootstrap.init_app(app)
+    db.init_app(app)
 
     app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
-    toolbar = DebugToolbarExtension()
     toolbar.init_app(app)
     
-    db = SQLAlchemy(app) 
 
     # bcrypt.init_app(app)
     # login_manager.init_app(app)
@@ -71,9 +69,6 @@ def create_app(test_config=None):
     # app.register_blueprint(homepage)
     # app.register_blueprint(misc)
 
-
-    #from . import db
-    #db.init_app(app)
 
     @app.route('/')
     def index():

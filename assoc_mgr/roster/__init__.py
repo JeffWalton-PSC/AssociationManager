@@ -1,7 +1,6 @@
 from flask import render_template, url_for, flash, redirect, request, Blueprint, make_response, session, redirect
 #from flask_login import login_user, current_user, logout_user, login_required
 #from assoc_mgr.auth import login_required
-#from assoc_mgr.db import get_db
 from assoc_mgr.roster.forms import Roster, AddStudent
 from assoc_mgr.queries import students, associations, yearterms, association_export, association_members
 from datetime import datetime
