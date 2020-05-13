@@ -12,11 +12,13 @@ from flask import (
 #from assoc_mgr.auth.forms import LDAPLoginForm
 #from assoc_mgr.models import UserLDAP
 #from flask_login import login_user, current_user, logout_user, login_required, UserMixin
+from flask_login import login_user, logout_user, login_required, current_user
+
 
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from assoc_mgr.db import get_db
-
+from .. import db
+from ..models import User
 
 from flask_wtf import FlaskForm
 #from assoc_mgr import ldap_manager, login_manager
@@ -134,22 +136,13 @@ def login():
     
     form = LoginForm()
 
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        db = get_db()
-        error = None
-        user = db.execute(
-            'SELECT * FROM user WHERE username = ?', (username,)
-        ).fetchone()
+    if form.validate_on_submit():
+        username=form.username.data.lower()
+        user = User.query.filter_by(username=username).first()
+        password = form.password.data
 
-        if user is None:
-            error = 'Incorrect username.'
-            logger.error(f"{username}: Incorrect username.")
-        # elif not check_password_hash(user['password'], password):
-        #     error = 'Incorrect password.'
-
-        if error is None:
+        if user is not None and user.verify_password(password):
+            login_user(user, form.remember_me.data)
             session.clear()
             session['user_id'] = user['id']
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
@@ -157,7 +150,8 @@ def login():
             logger.info(f"{username} (user_id={session['user_id']}) logged in.")
             return redirect(url_for('roster.index'))
 
-        flash(error)
+        flash('Invalid username or password.')
+        logger.error(f"{username}: Incorrect username or password.")
 
     return render_template('auth/login.html', form=form )
 
