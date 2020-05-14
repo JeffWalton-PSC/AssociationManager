@@ -1,4 +1,5 @@
-from assoc_mgr import db
+from flask_login import UserMixin
+from assoc_mgr import db, login_manager
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -30,3 +31,8 @@ class Association(db.Model):
 
     def __repr__(self):
         return f"<Role {self.name}>" 
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))

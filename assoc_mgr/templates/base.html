@@ -25,8 +25,8 @@
   <nav>
     <h1> Association Manager </h1>
     <ul>
-      {% if g.user %}
-        <li ><span>{{ g.user['username'] }}</span>
+      {% if current_user.is_authenticated %}
+        <li ><span>{{ current_user.username }}</span>
         <li ><a href="{{ url_for('auth.logout') }}">Log Out</a>
       {% else %}
         <li ><a href="{{ url_for('auth.login') }}">Log In</a>

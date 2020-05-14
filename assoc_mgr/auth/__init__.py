@@ -20,70 +20,12 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .. import db
 from ..models import User
 
-from flask_wtf import FlaskForm
 #from assoc_mgr import ldap_manager, login_manager
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, IntegerField, SelectField, ValidationError
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from flask_login import current_user
 #from flask_ldap3_login import AuthenticationResponseStatus
 
+from assoc_mgr.auth.forms import Login
 from assoc_mgr.queries import associations, yearterms, students, association_export
 
-
-
-class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    submit = SubmitField('Login')
-    remember =  BooleanField('Remember This Computer')
-
-
-# class LDAPLoginForm(FlaskForm):
-#     username = StringField('Email', validators=[DataRequired()])
-#     password = PasswordField('Password', validators=[DataRequired()])
-#     submit = SubmitField('Login')
-#     remember =  BooleanField('Remember This Computer')
-
-
-    # def validate_ldap(self):
-    #     logging.debug('Validating LDAPLoginForm against LDAP')
-    #     logging.debug('Validate the username/password data against ldap directory')
-        
-    #     username = self.username.data
-    #     password = self.password.data
-
-    #     result = ldap_manager.authenticate(username, password)
-
-    #     if result.status == AuthenticationResponseStatus.success:
-    #         self.user = ldap_manager._save_user(
-    #             result.user_dn,
-    #             result.user_id,
-    #             result.user_info,
-    #             result.user_groups
-    #         )
-    #         return True
-
-    #     else:
-    #         self.user = None
-    #         self.username.errors.append('Invalid Username.')
-    #         self.password.errors.append('Invalid Password.')
-    #         return False
-
-
-    # def validate(self, *args, **kwargs):
-    #     """
-    #     Validates the form by calling `validate` on each field, passing any
-    #     extra `Form.validate_<fieldname>` validators to the field validator.
-    #     also calls `validate_ldap`
-    #     """
-    #     print("Called: validate()", self, args, kwargs)
-    #     valid = FlaskForm.validate(self, *args, **kwargs)
-    #     if not valid:
-    #         logging.debug("Form validation failed before we had a chance to "
-    #                       "check ldap. Reasons: '{0}'".format(self.errors))
-    #         return valid
-
-    #     return self.validate_ldap()
 
 from assoc_mgr import connection as assoc_mgr_conn
 connection = assoc_mgr_conn
@@ -93,7 +35,7 @@ df_association = associations(connection)
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
-users ={}
+#users ={}
 logging.basicConfig(level=logging.DEBUG)
 
 # @ldap_manager.save_user
@@ -134,7 +76,7 @@ def index():
 @bp.route('/login', methods=('GET', 'POST'))
 def login():
     
-    form = LoginForm()
+    form = Login()
 
     if form.validate_on_submit():
         username=form.username.data.lower()
@@ -142,9 +84,8 @@ def login():
         password = form.password.data
 
         if user is not None and user.verify_password(password):
-            login_user(user, form.remember_me.data)
             session.clear()
-            session['user_id'] = user['id']
+            login_user(user)
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
             session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
             logger.info(f"{username} (user_id={session['user_id']}) logged in.")
@@ -156,32 +97,34 @@ def login():
     return render_template('auth/login.html', form=form )
 
 
-@bp.before_app_request
-def load_logged_in_user():
-    user_id = session.get('user_id')
+# @bp.before_app_request
+# def load_logged_in_user():
+#     user_id = session.get('user_id')
 
-    if user_id is None:
-        g.user = None
-    else:
-        g.user = get_db().execute(
-            'SELECT * FROM user WHERE id = ?', (user_id,)
-        ).fetchone()
+#     if user_id is None:
+#         g.user = None
+#     else:
+#         g.user = get_db().execute(
+#             'SELECT * FROM user WHERE id = ?', (user_id,)
+#         ).fetchone()
 
 
 @bp.route('/logout')
+@login_required
 def logout():
-    logger.info(f"{session['user_id']} logged out")
+    logout_user()
+    flash('You have been logged out.')
+    logger.info(f"{current_user.username} - logged out.")
     session.clear()
     return redirect(url_for('auth.login'))
 
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
+# def login_required(view):
+#     @functools.wraps(view)
+#     def wrapped_view(**kwargs):
+#         if g.user is None:
+#             return redirect(url_for('auth.login'))
+#         return view(**kwargs)
 
-        return view(**kwargs)
-
-    return wrapped_view
+#     return wrapped_view
 
