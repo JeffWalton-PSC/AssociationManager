@@ -90,15 +90,21 @@ def login():
             session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
             user_role = user.role
             print(f"{user.username}: role={user_role}")
-            if user_role == Role.query.filter_by(name='Admin').first():
+            if user_role.name == 'Admin':
                 session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
             else:
-                user_assoc_list = user.role.assocs
+                user_assoc_list = [ a.name for a in user.role.assocs ]
                 print(f"{user.username}: user_assoc_list={user_assoc_list}")
-                session['association_list'] = [tuple(a) for a in df_association.to_numpy() if a in user_assoc_list]
+                if not user_assoc_list:
+                    logger.error(f"{user.username} user_assoc_list is empty {user_assoc_list}.")
+                    flash(f"{user.username} user_assoc_list is empty {user_assoc_list}.", 'error')
+                    logout_user(user)
+                    return render_template('auth/login.html', form=form )
+                else:
+                    session['association_list'] = [tuple(a) for a in df_association.to_numpy() if a[0] in user_assoc_list]
             return redirect(url_for('roster.index'))
 
-        flash('Invalid username or password.')
+        flash('Invalid username or password.', 'warning')
         logger.error(f"{username}: Incorrect username or password.")
 
     return render_template('auth/login.html', form=form )
