@@ -2,12 +2,10 @@ import os
 
 from flask import Flask
 from flask import redirect, url_for
-#from flask_bcrypt import Bcrypt #Library for encryption
-#from assoc_mgr.config import Config
-#from flask_ldap3_login import LDAP3LoginManager
-#from flask_ldap3_login.forms import LDAPLoginForm
 from flask_bootstrap import Bootstrap
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_ldap3_login import LDAP3LoginManager
+#from flask_ldap3_login.forms import LDAPLoginForm
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 from loguru import logger
@@ -19,9 +17,7 @@ toolbar = DebugToolbarExtension()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 login_manager.login_message_category = 'info'
-# ldap_manager = LDAP3LoginManager()
-
-# bcrypt = Bcrypt()
+ldap_manager = LDAP3LoginManager()
 
 from sqlalchemy import create_engine
 engine = create_engine('sqlite:///data/Campus6_mock.db?check_same_thread=False')
@@ -54,9 +50,7 @@ def create_app(config_name='default'):
     app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
     toolbar.init_app(app)
     
-
-    # bcrypt.init_app(app)
-    # ldap_manager.init_app(app)
+    ldap_manager.init_app(app)
 
 
     @app.route('/')

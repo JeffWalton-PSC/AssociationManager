@@ -15,8 +15,6 @@ from flask import (
 from flask_login import login_user, logout_user, login_required, current_user
 
 
-from werkzeug.security import check_password_hash, generate_password_hash
-
 from .. import db
 from ..models import User, Role, Association
 
@@ -98,7 +96,7 @@ def login():
                 if not user_assoc_list:
                     logger.error(f"{user.username} user_assoc_list is empty {user_assoc_list}.")
                     flash(f"{user.username} user_assoc_list is empty {user_assoc_list}.", 'error')
-                    logout_user(user)
+                    logout_user()
                     return render_template('auth/login.html', form=form )
                 else:
                     session['association_list'] = [tuple(a) for a in df_association.to_numpy() if a[0] in user_assoc_list]
@@ -110,18 +108,6 @@ def login():
     return render_template('auth/login.html', form=form )
 
 
-# @bp.before_app_request
-# def load_logged_in_user():
-#     user_id = session.get('user_id')
-
-#     if user_id is None:
-#         g.user = None
-#     else:
-#         g.user = get_db().execute(
-#             'SELECT * FROM user WHERE id = ?', (user_id,)
-#         ).fetchone()
-
-
 @bp.route('/logout')
 @login_required
 def logout():
@@ -130,14 +116,4 @@ def logout():
     logout_user()
     session.clear()
     return redirect(url_for('auth.login'))
-
-
-# def login_required(view):
-#     @functools.wraps(view)
-#     def wrapped_view(**kwargs):
-#         if g.user is None:
-#             return redirect(url_for('auth.login'))
-#         return view(**kwargs)
-
-#     return wrapped_view
 
