@@ -9,15 +9,30 @@ class User(db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     def __repr__(self):
-        return f"<User {self.username}>" 
+        return f"<User {self.username}>"
+
+    def verify_password(self, password):
+        return True
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return str(self.id)
 
 
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True, index=True, nullable=False)
-    users = db.relationship('User', backref='role', lazy='dynamic')
-    assocs = db.relationship('Association', backref='role', lazy='dynamic')
+    users = db.relationship('User', backref='role')
+    assocs = db.relationship('Association', backref='role')
 
     def __repr__(self):
         return f"<Role {self.name}>" 

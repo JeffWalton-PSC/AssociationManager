@@ -18,7 +18,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from .. import db
-from ..models import User
+from ..models import User, Role, Association
 
 #from assoc_mgr import ldap_manager, login_manager
 #from flask_ldap3_login import AuthenticationResponseStatus
@@ -86,9 +86,16 @@ def login():
         if user is not None and user.verify_password(password):
             session.clear()
             login_user(user)
-            session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
-            session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
             logger.info(f"{username} (user_id={session['user_id']}) logged in.")
+            session['yearterm_list'] = [tuple(t) for t in df_yearterm[['YEARTERM', 'YEARTERM']].to_numpy()]
+            user_role = user.role
+            print(f"{user.username}: role={user_role}")
+            if user_role == Role.query.filter_by(name='Admin').first():
+                session['association_list'] = [tuple(a) for a in df_association.to_numpy()]
+            else:
+                user_assoc_list = user.role.assocs
+                print(f"{user.username}: user_assoc_list={user_assoc_list}")
+                session['association_list'] = [tuple(a) for a in df_association.to_numpy() if a in user_assoc_list]
             return redirect(url_for('roster.index'))
 
         flash('Invalid username or password.')
@@ -112,9 +119,9 @@ def login():
 @bp.route('/logout')
 @login_required
 def logout():
-    logout_user()
     flash('You have been logged out.')
     logger.info(f"{current_user.username} - logged out.")
+    logout_user()
     session.clear()
     return redirect(url_for('auth.login'))
 
