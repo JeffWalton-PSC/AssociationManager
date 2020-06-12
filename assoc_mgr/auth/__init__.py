@@ -1,5 +1,6 @@
 import functools
 import logging
+import ldap
 from datetime import datetime
 from loguru import logger
 
@@ -117,3 +118,7 @@ def logout():
     session.clear()
     return redirect(url_for('auth.login'))
 
+
+def get_ldap_connection():
+    conn = ldap.initialize('ldap://paulsmiths.local')
+    return conn
