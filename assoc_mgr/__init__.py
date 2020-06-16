@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask
-from flask import redirect, url_for
+from flask import redirect, url_for, current_app
 from flask_bootstrap import Bootstrap
 
 # from flask_debugtoolbar import DebugToolbarExtension
@@ -10,17 +10,24 @@ from flask_sqlalchemy import SQLAlchemy
 from loguru import logger
 from instance.config import config
 
+from sqlalchemy import create_engine
+
+powercampus_engine = create_engine(
+    f"mssql+pyodbc://{os.environ.get('POWERCAMPUS_DB_USER')}:" 
+    + f"{os.environ.get('POWERCAMPUS_DB_PASS')}"
+    + f"@{os.environ.get('POWERCAMPUS_DB_HOST')}/"
+    + f"{os.environ.get('POWERCAMPUS_DB_DATABASE')}?"
+    + f"driver={os.environ.get('POWERCAMPUS_DB_DRIVER')}"
+)
+# dev_engine = create_engine("sqlite:///data/Campus6_mock.db?check_same_thread=False")
+
+
 bootstrap = Bootstrap()
 db = SQLAlchemy()
 # toolbar = DebugToolbarExtension()
 login_manager = LoginManager()
 login_manager.login_view = "auth.login"
 login_manager.login_message_category = "info"
-
-from sqlalchemy import create_engine
-
-engine = create_engine("sqlite:///data/Campus6_mock.db?check_same_thread=False")
-connection = engine.connect()
 
 
 def create_app(config_name="default"):
@@ -32,7 +39,6 @@ def create_app(config_name="default"):
     except OSError:
         pass
 
-    # app.config.from_pyfile('config.py', silent=True)
     app.config.from_object(config[config_name])
     config[config_name].init_app(app)
 

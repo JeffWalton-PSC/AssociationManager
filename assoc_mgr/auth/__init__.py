@@ -9,13 +9,12 @@ from ..models import User, Role, Association
 from assoc_mgr.auth.forms import Login
 from assoc_mgr.queries import associations, yearterms, students, association_export
 
+from assoc_mgr import powercampus_engine
 
-from assoc_mgr import connection as assoc_mgr_conn
 
-connection = assoc_mgr_conn
-
-df_yearterm = yearterms(connection)
-df_association = associations(connection)
+with powercampus_engine.connect() as connection:
+    df_yearterm = yearterms(connection)
+    df_association = associations(connection)
 
 
 bp = Blueprint("auth", __name__, url_prefix="/auth")

@@ -89,3 +89,4 @@ def association_export(year, term, association, connection):
     ORDER BY LAST_NAME ASC
         """
     return pd.read_sql_query(sql_str, connection)
+

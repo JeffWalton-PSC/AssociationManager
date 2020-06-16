@@ -10,6 +10,7 @@ from flask import (
     redirect,
 )
 from flask_login import login_required
+from assoc_mgr import powercampus_engine
 from assoc_mgr.roster.forms import Roster, AddStudent
 from assoc_mgr.queries import (
     students,
@@ -25,11 +26,6 @@ from loguru import logger
 
 
 bp = Blueprint("roster", __name__)
-
-
-from assoc_mgr import connection as assoc_mgr_conn
-
-connection = assoc_mgr_conn
 
 
 @bp.route("/roster/index", methods=["GET", "POST"])
@@ -79,13 +75,14 @@ def index():
                     AND ACADEMIC_TERM = '{term}' 
                     AND ACADEMIC_YEAR = '{year}' ;
                     """
-
-                connection.execute(sql_str)
+                with powercampus_engine.connect() as connection:
+                    connection.execute(sql_str)
                 logger.info(f"{del_list} have been deleted from {association} for {term} {year}.")
                 flash(f"{del_list} have been deleted from {association} for {term} {year}.", "info")
 
                 # refresh roster
-                df_export = association_export(year, term, association, connection)
+                with powercampus_engine.connect() as connection:
+                    df_export = association_export(year, term, association, connection)
                 if not (df_export.empty):
                     df_export = df_export.rename(columns={"PEOPLE_ORG_CODE_ID": "PSC_ID"})
                     result = df_export.to_dict("split")["data"]
@@ -106,7 +103,8 @@ def index():
             else:
                 flash(f"No students selected for deletion.", "warn")
 
-        df_export = association_export(year, term, association, connection)
+        with powercampus_engine.connect() as connection:
+            df_export = association_export(year, term, association, connection)
 
         if not (df_export.empty):
             df_export = df_export.rename(columns={"PEOPLE_ORG_CODE_ID": "PSC_ID"})
@@ -154,7 +152,8 @@ def add():
     today = datetime.now()
     now = str(today.year)
     one_year_ago = str(today.year - 1)
-    df_student = students(now, one_year_ago, connection)
+    with powercampus_engine.connect() as connection:
+        df_student = students(now, one_year_ago, connection)
     student_list = [tuple(s) for s in df_student[["PEOPLE_CODE_ID", "STUDENT"]].to_numpy()]
 
     form.students.choices = student_list
@@ -173,7 +172,8 @@ def add():
             #            return render_template('roster/index.html', title='Roster', form=Roster(), yearterm=yearterm, association=association)
             return redirect(url_for("roster.index", association=association, yearterm=yearterm))
 
-        assoc_members = association_members(year, term, association, connection)
+        with powercampus_engine.connect() as connection:
+            assoc_members = association_members(year, term, association, connection)
 
         add_list = form.students.data
 
@@ -239,7 +239,8 @@ def add():
 
             insert_sql += ";"
 
-            connection.execute(insert_sql)
+            with powercampus_engine.connect() as connection:
+                connection.execute(insert_sql)
 
             logger.info(f"{add_list} have been added to {association} for {term} {year}.")
             flash(f"{add_list} have been added to {association} for {yearterm}", "info")
