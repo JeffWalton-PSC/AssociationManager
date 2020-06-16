@@ -3,11 +3,9 @@ from wtforms import SubmitField, SelectField, BooleanField, SelectMultipleField
 from wtforms.validators import DataRequired
 
 
-class Roster(FlaskForm):       
-    yearterm = SelectField ('Year.Term', 
-                        choices=[], validators=[DataRequired()])
-    association = SelectField ('Association', choices=[], 
-                                default = None, validators=[DataRequired()])
+class Roster(FlaskForm):
+    yearterm = SelectField("Year.Term", choices=[], validators=[DataRequired()])
+    association = SelectField("Association", choices=[], default=None, validators=[DataRequired()])
     view_roster = SubmitField("View Roster")
     delete = BooleanField("Delete")
     add_students = SubmitField("Add Students")
@@ -17,7 +15,8 @@ class Roster(FlaskForm):
 
 
 class AddStudent(FlaskForm):
-    students = SelectMultipleField('Student Names', choices = [], default = (None, 'Please Select Students'), validators=[])
-    submit = SubmitField('Add Students')
-    cancel = SubmitField('Cancel')
-
+    students = SelectMultipleField(
+        "Student Names", choices=[], default=(None, "Please Select Students"), validators=[]
+    )
+    submit = SubmitField("Add Students")
+    cancel = SubmitField("Cancel")

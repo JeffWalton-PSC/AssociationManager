@@ -4,5 +4,4 @@ from wtforms.validators import DataRequired
 
 
 class Admin(FlaskForm):
-    submit = SubmitField('Submit button')
-
+    submit = SubmitField("Submit button")

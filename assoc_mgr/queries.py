@@ -35,7 +35,7 @@ def associations(connection):
 
 
 def yearterms(connection):
-	sql_str = f"""
+    sql_str = f"""
     SELECT DISTINCT
         ACADEMIC_YEAR,
         ACADEMIC_TERM,
@@ -55,11 +55,11 @@ def yearterms(connection):
             AND ACADEMIC_TERM in ('SPRING', 'SUMMER', 'FALL')
     ORDER BY END_DATE DESC
 	"""
-	return pd.read_sql_query(sql_str, connection)
+    return pd.read_sql_query(sql_str, connection)
 
 
 def association_members(year, term, association, connection):
-	sql_str = f"""
+    sql_str = f"""
 	SELECT DISTINCT
 		PEOPLE_ORG_CODE_ID
 	--	, ASSOCIATION
@@ -70,7 +70,7 @@ def association_members(year, term, association, connection):
 	and ACADEMIC_TERM = '{term}'
 	and ASSOCIATION = '{association}'
 	"""
-	return pd.read_sql_query(sql_str, connection)['PEOPLE_ORG_CODE_ID'].tolist()
+    return pd.read_sql_query(sql_str, connection)["PEOPLE_ORG_CODE_ID"].tolist()
 
 
 def association_export(year, term, association, connection):

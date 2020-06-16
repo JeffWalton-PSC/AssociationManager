@@ -2,10 +2,10 @@ html { font-family: 'Open Sans',Helvetica,Arial,Lucida,sans-serif; font-size: 12
 body { max-width: 960px; margin: 0 auto; background: white; }
 h1 { color: #377ba8; margin: 1rem 0; }
 a:link { 
-	color: #0000EE;
+	color: rgb(50, 109, 52);
 }
 a:visited {
-	color: #551A8B;
+	color: #377ba8;
 }
 a:hover {
 	color: #6BA539;
