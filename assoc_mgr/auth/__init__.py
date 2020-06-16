@@ -1,26 +1,13 @@
-import functools
-import logging
-import ldap
-from datetime import datetime
+import ldap3
 from loguru import logger
 
-
-from flask import current_app, abort, send_file, make_response
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    current_app, Blueprint, flash, redirect, render_template, session, url_for
 )
-#from assoc_mgr import db,bcrypt, ldap_manager, login_manager #imported from __init__.py
-#from assoc_mgr.auth.forms import LDAPLoginForm
-#from assoc_mgr.models import UserLDAP
-#from flask_login import login_user, current_user, logout_user, login_required, UserMixin
 from flask_login import login_user, logout_user, login_required, current_user
 
-
-from .. import db
+#from .. import db
 from ..models import User, Role, Association
-
-#from assoc_mgr import ldap_manager, login_manager
-#from flask_ldap3_login import AuthenticationResponseStatus
 
 from assoc_mgr.auth.forms import Login
 from assoc_mgr.queries import associations, yearterms, students, association_export
@@ -34,38 +21,7 @@ df_association = associations(connection)
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth')
-#users ={}
-logging.basicConfig(level=logging.DEBUG)
 
-# @ldap_manager.save_user
-# def save_user(dn, username, data, memberships):
-#         user = UserLDAP(dn, username, data)
-#         users[dn] = user
-#         return user
- 
-# @login_manager.user_loader
-# def load_user(id):
-#     #return UserLDAP.query.get(int(id))
-#     if id in users:
-#         return users[id]
-#     return None
-
-# @Login.route("/login", methods =['GET', 'POST']) 
-# def login():
-#     #if current_user.is_authenticated:
-#         #return redirect(url_for('main.home'))
-#     #form = LoginForm()
-#     form = LDAPLoginForm()
-#     if form.validate_on_submit():
-#         login_user(form.user, remember=form.remember.data)
-#         next_page = request.args.get('next')
-#         return redirect(next_page) if next_page else redirect(url_for('home.home'))
-#     return render_template('loginTest.html', title='login', form = form)
-
-# @Login.route("/logout")
-# def logout():
-#     logout_user()
-#     return redirect(url_for('home.home'))
 
 @bp.route('/')
 def index():
@@ -119,6 +75,35 @@ def logout():
     return redirect(url_for('auth.login'))
 
 
-def get_ldap_connection():
-    conn = ldap.initialize('ldap://paulsmiths.local')
-    return conn
+def authenticate(username, password ):
+    server = ldap3.Server(current_app.config.get('LDAP_HOST'), use_ssl=True,  get_info=ldap3.ALL)
+
+    bind_user = f"{current_app.config.get('LDAP_BIND_USER_PREFIX')}{username}"
+
+    connection = ldap3.Connection(
+        server=server,
+        read_only=True,
+        user=bind_user,
+        password=password,
+        authentication=ldap3.NTLM,
+        check_names=True,
+        raise_exceptions=True,
+    )
+
+    try:
+        connection.bind()
+        authenticate_response = True
+        logger.debug(f"Authentication was successful for user '{bind_user}'")
+
+    except ldap3.core.exceptions.LDAPInvalidCredentialsResult:
+        logger.debug(f"Authentication was not successful for user '{bind_user}'")
+        authenticate_response = False
+    
+    except Exception as e:
+        logger.error(e)
+        authenticate_response = False
+
+    logger.debug(f"Destroying connection at <{hex(id(connection))}>")
+    connection.unbind()
+    
+    return authenticate_response
