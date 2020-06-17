@@ -80,7 +80,7 @@ def index():
                         connection.execute(sql_str)
                 except Exception as e:
                     logger.error(e)
-                    flash(f"ERROR: {add_list} have NOT been deleted from {association} for {yearterm}", "error")
+                    flash(f"ERROR: {del_list} have NOT been deleted from {association} for {yearterm}", "error")
                     return render_template("errors/500.html")
 
                 logger.info(f"{del_list} have been deleted from {association} for {term} {year}.")
