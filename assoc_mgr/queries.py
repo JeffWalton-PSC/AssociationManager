@@ -7,8 +7,8 @@ def students(now, one_year_ago, connection):
         P.PEOPLE_CODE_ID, 
         P.LAST_NAME, 
         P.FIRST_NAME, 
-        (P.LAST_NAME || ', ' || P.FIRST_NAME || ', ' || P.PEOPLE_CODE_ID) as STUDENT
-    --  CONCAT(P.LAST_NAME, ', ' , P.FIRST_NAME, ', ' , P.PEOPLE_CODE_ID) as STUDENT
+--      (P.LAST_NAME || ', ' || P.FIRST_NAME || ', ' || P.PEOPLE_CODE_ID) as STUDENT
+        CONCAT(P.LAST_NAME, ', ' , P.FIRST_NAME, ', ' , P.PEOPLE_CODE_ID) as STUDENT
     FROM ACADEMIC as A inner join PEOPLE as P 
         ON A.PEOPLE_ID = P.PEOPLE_ID
     WHERE A.PRIMARY_FLAG = 'Y' 
@@ -25,8 +25,8 @@ def associations(connection):
     sql_str = f"""
 	SELECT DISTINCT 
 		C.CODE_VALUE as ASSOCIATION,
-		C.LONG_DESC || '-' || C.CODE_VALUE as ASSOC_LABEL
---		CONCAT(C.LONG_DESC, '-', C.CODE_VALUE) as ASSOC_LABEL
+--		C.LONG_DESC || '-' || C.CODE_VALUE as ASSOC_LABEL
+		CONCAT(C.LONG_DESC, '-', C.CODE_VALUE) as ASSOC_LABEL
 	FROM CODE_ASSOCIATION AS C 
 	WHERE C.STATUS = 'A'
 	ORDER BY ASSOC_LABEL
@@ -40,8 +40,8 @@ def yearterms(connection):
         ACADEMIC_YEAR,
         ACADEMIC_TERM,
         FINAL_END_DATE as END_DATE,
-        T.ACADEMIC_YEAR || '.' || T.ACADEMIC_TERM as YEARTERM
-        --CONCAT(T.ACADEMIC_YEAR, '.', T.ACADEMIC_TERM) as YEARTERM
+--      T.ACADEMIC_YEAR || '.' || T.ACADEMIC_TERM as YEARTERM
+        CONCAT(T.ACADEMIC_YEAR, '.', T.ACADEMIC_TERM) as YEARTERM
     FROM   ACADEMICCALENDAR AS T
     WHERE  EXISTS(
             SELECT 1

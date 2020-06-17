@@ -14,11 +14,12 @@ from sqlalchemy import create_engine
 
 powercampus_engine = create_engine(
     f"mssql+pyodbc://{os.environ.get('POWERCAMPUS_DB_USER')}:" 
-    + f"{os.environ.get('POWERCAMPUS_DB_PASS')}"
-    + f"@{os.environ.get('POWERCAMPUS_DB_HOST')}/"
+    + f"{os.environ.get('POWERCAMPUS_DB_PASS')}@"
+    + f"{os.environ.get('POWERCAMPUS_DB_HOST')}/"
     + f"{os.environ.get('POWERCAMPUS_DB_DATABASE')}?"
     + f"driver={os.environ.get('POWERCAMPUS_DB_DRIVER')}"
 )
+# development engine
 # dev_engine = create_engine("sqlite:///data/Campus6_mock.db?check_same_thread=False")
 
 
