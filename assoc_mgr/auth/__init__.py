@@ -38,7 +38,8 @@ def login():
         if user is not None and user.verify_password(password):
             session.clear()
             login_user(user)
-            logger.info(f"{username} (user_id={session['user_id']}) logged in.")
+            session['user_id'] = user.id
+            logger.info(f"{username} (user_id={session.get('user_id')}) logged in.")
             session["yearterm_list"] = [
                 tuple(t) for t in df_yearterm[["YEARTERM", "YEARTERM"]].to_numpy()
             ]

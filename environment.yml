@@ -21,6 +21,7 @@ dependencies:
   - openssl=1.1.1g=he774522_0
   - pandas=1.0.4=py38h47e9c7a_0
   - pip=20.1.1=py38_1
+  - pyodbc=4.0.30=py38ha925a31_0
   - python=3.8.3=he1778fa_0
   - python-dateutil=2.8.1=py_0
   - pytz=2020.1=py_0
@@ -40,10 +41,12 @@ dependencies:
     - flask-bootstrap==3.3.7.1
     - flask-login==0.5.0
     - flask-sqlalchemy==2.4.3
+    - flask-wtf==0.14.3
     - ldap3==2.7
     - loguru==0.5.1
     - pyasn1==0.4.8
     - visitor==0.1.3
     - win32-setctime==1.0.1
+    - wtforms==2.3.1
 prefix: C:\Users\jwalton-a\.conda\envs\py38_AssocMgr
 
