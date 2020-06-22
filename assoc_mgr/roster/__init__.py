@@ -9,7 +9,7 @@ from flask import (
     session,
     redirect,
 )
-from flask_login import login_required
+from flask_login import login_required, current_user
 from assoc_mgr import powercampus_engine
 from assoc_mgr.roster.forms import Roster, AddStudent
 from assoc_mgr.queries import (
@@ -83,7 +83,7 @@ def index():
                     flash(f"ERROR: {del_list} have NOT been deleted from {association} for {yearterm}", "error")
                     return render_template("errors/500.html")
 
-                logger.info(f"{del_list} have been deleted from {association} for {term} {year}.")
+                logger.info(f"{del_list} have been deleted from {association} for {term} {year} by {current_user.username}.")
                 flash(f"{del_list} have been deleted from {association} for {term} {year}.", "info")
 
                 # refresh roster
@@ -253,7 +253,7 @@ def add():
                 flash(f"ERROR: {add_list} have NOT been added to {association} for {yearterm}", "error")
                 return render_template("errors/500.html")
 
-            logger.info(f"{add_list} have been added to {association} for {term} {year}.")
+            logger.info(f"{add_list} have been added to {association} for {term} {year} by {current_user.username}.")
             flash(f"{add_list} have been added to {association} for {yearterm}", "info")
             return redirect(url_for("roster.index", association=association, yearterm=yearterm))
 
