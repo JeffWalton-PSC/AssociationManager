@@ -229,7 +229,7 @@ def add():
 					'{association}', 
 					'{year}', 
 					'{term}', 
-					'', 
+					'MAIN', 
 					'',
 					'{today}', 
 					'{today}', 
